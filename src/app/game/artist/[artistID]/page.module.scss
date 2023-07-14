@@ -1,0 +1,155 @@
+.game-container {
+    align-items: center;
+    align-content: center;
+    text-align: center;
+
+    position: absolute;
+    display: block;
+
+    width: 100%;
+    margin: 0px;
+
+
+    .title {
+        padding: 1rem;
+        font-size: 2em;
+        margin: 0;
+    }
+
+    .lyric-box {
+        height: fit-content;
+        width: 90%;
+        max-width: 1000px;
+
+        margin: auto;
+        margin-top: 1rem;
+        overflow: hidden;
+
+        background-color: var(--bg-color2);
+
+        display: flex;
+        flex-direction: column;
+        justify-content: space-evenly;
+
+        .lyric-line {
+            min-height: 3em;
+            font-size: 1.5em;
+            position: relative;
+            opacity: 0;
+            pointer-events: none;
+
+            animation: fade-in 1s forwards;
+
+            @for $i from 1 through 5 {
+                &:nth-child(#{$i}n) {
+                    animation-delay: #{$i * 2 - 2}s;
+                }
+            }
+
+            p {
+                margin: 0;
+                padding: 0;
+                width: 100%;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
+
+            &:not(:last-child) {
+                border-bottom: 2px var(--bg-color) solid;
+            }
+        }
+    }
+}
+
+.bottom-container {
+    position: absolute;
+    height: 12rem;
+    width: 100%;
+    bottom: 0%;
+}
+
+@media only screen and (max-width: 800px) {
+    .bottom-container {
+        margin-bottom: 3rem;
+    }
+}
+
+.button-container {
+    width: 90%;
+    max-width: 700px;
+    margin: auto;
+    margin-top: 80px;
+    display: flex;
+    justify-content: space-between;
+
+    .skip {
+        border: var(--border-color) 1px solid;
+        float: left;
+    }
+
+    .submit {
+        background-color: var(--spotify-green);
+        float: right;
+    }
+}
+
+#guess-input {
+    width: 95%;
+    max-width: 1000px;
+    margin: auto;
+}
+
+@keyframes fade-in {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+
+.score-container {
+    text-align: center;
+
+    margin: 0;
+
+    width: 16rem;
+
+    .score-text {
+        margin: auto;
+        height: fit-content;
+        /* float: 50% */
+        font-size: 3rem;
+
+        position: relative;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+
+        text-shadow: 0 0 5px var(--spotify-green), 0 0 10px var(--spotify-green), 0 0 20px var(--spotify-green);
+    }
+}
+
+
+
+/* win screen */
+
+#win-screen {
+    background-color: var(--bg-color);
+
+    width: 100%;
+    height: 100%;
+
+    position: absolute;
+    top: 0%;
+    left: 0%;
+}
+
+#track-image {
+    width: 80%;
+}
+

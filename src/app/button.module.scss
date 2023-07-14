@@ -1,0 +1,31 @@
+.button {
+    padding: 0.5rem;
+    border-radius: 6rem;
+
+    width: 16rem;
+
+    transition: 0.2s;
+
+    /* remove default button styling */
+    background: none;
+    color: white;
+    border: none;
+    font: inherit;
+    cursor: pointer;
+    outline: inherit;
+
+    text-decoration: none;
+
+    &:disabled {
+        cursor: default;
+        opacity: 0.5;
+    }
+
+    &:not(:disabled):hover {
+        transform: scale(1.04);
+    }
+
+    &.green {
+        background-color: var(--spotify-green);
+    }
+}
