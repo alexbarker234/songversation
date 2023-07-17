@@ -1,68 +1,126 @@
 "use client";
 
-import React, { ChangeEvent, useEffect, useRef, useState, forwardRef } from "react";
+import React, { ChangeEvent, useEffect, useRef, useState, forwardRef, useCallback } from "react";
 import styles from "./autocomplete.module.scss";
-
-export interface Option {
-    id: string;
-    name: string;
+import { betterMod } from "@/lib/mathExtensions";
+export interface AutocompleteState {
+    isMenuOpen: boolean;
+    isInputInFocus: boolean;
+    searchText: string;
+    keyboardOption: number;
+    results: string[];
 }
 
 interface AutocompleteProps extends React.HTMLAttributes<HTMLDivElement> {
-    options: Option[];
-  }
+    options: string[];
+    onEnterPress?: (input: string, autocompleteState: AutocompleteState) => void;
+    onInputChange?: (input: string, autocompleteState: AutocompleteState) => void;
+}
 
-const Autocomplete = React.forwardRef<HTMLInputElement, AutocompleteProps>(({options, ...props}, inputRef) => {
-    useEffect(() => {   
+const Autocomplete = ({ options, onEnterPress, onInputChange, ...props }: AutocompleteProps) => {
+    useEffect(() => {
         document.addEventListener("click", handleClickOutside, true);
+        document.addEventListener("keydown", handleKeyboard, true);
+        return () => {
+            document.removeEventListener("click", handleClickOutside);
+            document.removeEventListener("keydown", handleKeyboard);
+        }
     }, []);
 
     const autocompleteRef = useRef<HTMLDivElement>(null);
-    const inputRefLocal = useRef<HTMLInputElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
+    const resultsListRef = useRef<HTMLUListElement>(null);
 
-    const [searchText, setSearchText] = useState("");
-    const [results, setResults] = useState<Option[]>([]);
-    const [focus, setFocus] = useState(false);
-    const [keyboardOption, setkeyboardOption] = useState(-1);
+    const [acState, _setState] = useState<AutocompleteState>({ isMenuOpen: false, searchText: "", results: [], keyboardOption: -1, isInputInFocus: false });
+    const acStateRef = useRef(acState);
+    const setState = (data: AutocompleteState) => {
+        acStateRef.current = data;
+        _setState(data);
+    };
 
-    const filterResults = (search: string) => search === '' ? [] : options.filter((e) => e.name.toLowerCase().includes(search.toLowerCase()));
+    const filterResults = (search: string) => (search === "" ? [] : options.filter((e) => e.toLowerCase().includes(search.toLowerCase())));
 
+    // react events
     const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const value = event.target.value;
-        setSearchText(value);
-        setResults(filterResults(value));
-        setFocus(true);
+        changeState(event.target.value, true);
     };
 
     const handleOptionClick = (event: React.MouseEvent<HTMLElement>) => {
         const element = event.target as HTMLUListElement;
-        setSearchText(element.innerHTML);
-        setResults(filterResults(element.innerHTML));
-        setFocus(false);
-
-        if (inputRefLocal.current) inputRefLocal.current.focus()
+        changeState(element.innerHTML, false);
+        if (inputRef.current) inputRef.current.focus();
     };
 
+    const changeState = (searchText: string, isMenuOpen: boolean) => {
+        if (onInputChange) onInputChange(searchText, acStateRef.current);
+        setState({
+            ...acState,
+            searchText,
+            results: filterResults(searchText),
+            isMenuOpen,
+        });
+    };
+
+    // document event listeners - must use ref not useState
     const handleClickOutside = (event: MouseEvent) => {
         if (!autocompleteRef.current) return;
-        setFocus(autocompleteRef.current.contains(event.target as HTMLDivElement));
+        if (autocompleteRef.current.contains(event.target as HTMLDivElement)) {
+            setState({
+                ...acStateRef.current,
+                isMenuOpen: true,
+            });
+        } else {
+            setState({
+                ...acStateRef.current,
+                isMenuOpen: false,
+                keyboardOption: -1,
+            });
+        }
     };
 
+    const handleKeyboard = (event: KeyboardEvent) => {
+        if (isNaN(acStateRef.current.keyboardOption)) setKeyboardOption(0);
+
+        if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+            event.preventDefault();
+            if (event.key === "ArrowUp") {
+                if (acStateRef.current.keyboardOption == -1) setKeyboardOption(0);
+                setKeyboardOption(betterMod(acStateRef.current.keyboardOption - 1, acStateRef.current.results.length));
+            } else if (event.key === "ArrowDown") {
+                setKeyboardOption(betterMod(acStateRef.current.keyboardOption + 1, acStateRef.current.results.length));
+            }
+            // scroll to top of selected child
+            if (resultsListRef.current) {
+                const selectedItem = resultsListRef.current.children[acStateRef.current.keyboardOption] as HTMLUListElement;
+                resultsListRef.current.scrollTo({
+                    behavior: "smooth",
+                    top: selectedItem.offsetTop,
+                });
+            }
+        } else if (event.key === "Enter") {
+            event.preventDefault();
+            console.log(acStateRef.current.keyboardOption);
+            if (acStateRef.current.keyboardOption == -1) {
+                if (onEnterPress) onEnterPress(inputRef.current?.value ?? "", acStateRef.current);
+            } else changeState(acStateRef.current.results[acStateRef.current.keyboardOption], false);
+        }
+    };
+    const setKeyboardOption = (keyboardOption: number) => setState({ ...acStateRef.current, keyboardOption });
+
     return (
-        <div {...props} className={`${styles["autocomplete"]} ${focus ? styles["focus"] : ""}`} ref={autocompleteRef}>
-            <input ref={inputRef} type="text" value={searchText} onChange={handleInputChange} placeholder="Search..." />
-            {results.length > 0 && (
-                <ul className={styles["autocomplete-results"]}>
-                    {results.map((result, index) => (
-                        <li key={index} onClick={handleOptionClick}>
-                            {result.name}
+        <div {...props} className={`${styles["autocomplete"]} ${acState.isMenuOpen ? styles["focus"] : ""}`} ref={autocompleteRef}>
+            <input ref={inputRef} type="text" value={acState.searchText} onChange={handleInputChange} placeholder="Search..." />
+            {acState.results.length > 0 && (
+                <ul className={styles["autocomplete-results"]} ref={resultsListRef}>
+                    {acState.results.map((result, index) => (
+                        <li key={index} onClick={handleOptionClick} className={acState.keyboardOption === index ? styles["selected"] : undefined}>
+                            {result}
                         </li>
                     ))}
                 </ul>
             )}
         </div>
     );
-});
-Autocomplete.displayName ='Autocomplete'
+};
 
 export default Autocomplete;

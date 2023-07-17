@@ -44,7 +44,8 @@ const LYRIC_ENDPOINT = `https://spotify-lyric-api.herokuapp.com/?trackid=`;
 export const getLyrics = async (trackID: string) => {
     const response: LyricResponse = await (await fetch(LYRIC_ENDPOINT + trackID, { next: { revalidate: 6000 } })).json();
     if (response.error) return []
-    const lyrics = response.lines.map((line) => line.words);
+    let lyrics = response.lines.map((line) => line.words);
+    lyrics= lyrics.filter((e) => e != '♪')
 
     return lyrics
 }
