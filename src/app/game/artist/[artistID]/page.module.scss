@@ -72,7 +72,9 @@
     height: 12rem;
     width: 100%;
     bottom: 0%;
-    
+    background-color: black;
+
+
     .feedback-box {
         width: 3rem;
         height: 3rem;
@@ -109,7 +111,7 @@
     width: 90%;
     max-width: 700px;
     margin: auto;
-    margin-top: 80px;
+    margin-top: 30px;
     display: flex;
     justify-content: space-between;
 
@@ -177,8 +179,6 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-
-        text-shadow: 0 0 5px var(--spotify-green), 0 0 10px var(--spotify-green), 0 0 20px var(--spotify-green);
     }
 }
 

@@ -24,7 +24,7 @@ const Autocomplete = ({ options, onEnterPress, onInputChange, ...props }: Autoco
         return () => {
             document.removeEventListener("click", handleClickOutside);
             document.removeEventListener("keydown", handleKeyboard);
-        }
+        };
     }, []);
 
     const autocompleteRef = useRef<HTMLDivElement>(null);
@@ -38,8 +38,18 @@ const Autocomplete = ({ options, onEnterPress, onInputChange, ...props }: Autoco
         _setState(data);
     };
 
-    const filterResults = (search: string) => (search === "" ? [] : options.filter((e) => e.toLowerCase().includes(search.toLowerCase())));
-
+    const punctuationRegex = /[^\w\s]/g
+    // returns only 15 results
+    const filterResults = (search: string) => (search.replaceAll(punctuationRegex, '') === "" ? [] : options.filter((e) => e.toLowerCase().replaceAll(punctuationRegex, '').includes(search.toLowerCase().replaceAll(punctuationRegex, '')))).slice(0,15);
+    const changeState = (searchText: string, isMenuOpen: boolean) => {
+        if (onInputChange) onInputChange(searchText, acStateRef.current);
+        setState({
+            ...acState,
+            searchText,
+            results: filterResults(searchText),
+            isMenuOpen,
+        });
+    };
     // react events
     const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
         changeState(event.target.value, true);
@@ -49,16 +59,6 @@ const Autocomplete = ({ options, onEnterPress, onInputChange, ...props }: Autoco
         const element = event.target as HTMLUListElement;
         changeState(element.innerHTML, false);
         if (inputRef.current) inputRef.current.focus();
-    };
-
-    const changeState = (searchText: string, isMenuOpen: boolean) => {
-        if (onInputChange) onInputChange(searchText, acStateRef.current);
-        setState({
-            ...acState,
-            searchText,
-            results: filterResults(searchText),
-            isMenuOpen,
-        });
     };
 
     // document event listeners - must use ref not useState
@@ -80,6 +80,7 @@ const Autocomplete = ({ options, onEnterPress, onInputChange, ...props }: Autoco
 
     const handleKeyboard = (event: KeyboardEvent) => {
         if (isNaN(acStateRef.current.keyboardOption)) setKeyboardOption(0);
+        console.log(acStateRef.current.keyboardOption);
 
         if (event.key === "ArrowUp" || event.key === "ArrowDown") {
             event.preventDefault();
@@ -99,7 +100,6 @@ const Autocomplete = ({ options, onEnterPress, onInputChange, ...props }: Autoco
             }
         } else if (event.key === "Enter") {
             event.preventDefault();
-            console.log(acStateRef.current.keyboardOption);
             if (acStateRef.current.keyboardOption == -1) {
                 if (onEnterPress) onEnterPress(inputRef.current?.value ?? "", acStateRef.current);
             } else changeState(acStateRef.current.results[acStateRef.current.keyboardOption], false);

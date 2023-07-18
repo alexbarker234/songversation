@@ -1,4 +1,4 @@
-import { getLyrics } from "@/lib/spotify";
+import { getArtistSongs, getLyrics } from "@/lib/spotify";
 import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
@@ -6,5 +6,5 @@ export async function GET(req: Request) {
     const id = searchParams.get("id");
     if (!id) return;
 
-    return NextResponse.json(await getLyrics(id));
+    return NextResponse.json(await getArtistSongs(id));
 }

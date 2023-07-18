@@ -18,8 +18,12 @@ body {
     margin: 0;
 
     font-family: sans-serif;
+    overflow-x: hidden;
 }
 
 * {
     box-sizing: border-box;
+}
+a {
+    text-decoration: none;
 }

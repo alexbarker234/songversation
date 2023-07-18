@@ -7,14 +7,14 @@
     transition: 0.2s;
 
     /* remove default button styling */
-    background: none;
+    background: inherit;
     color: white;
-    border: none;
+    border: inherit;
     font: inherit;
     cursor: pointer;
     outline: inherit;
 
-    text-decoration: none;
+    text-decoration: inherit;
 
     &:disabled {
         cursor: default;

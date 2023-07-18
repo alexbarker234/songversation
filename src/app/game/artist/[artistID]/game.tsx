@@ -50,12 +50,17 @@ const Game: React.FC<GameProps> = ({ trackMap, ...props }: GameProps) => {
     };
 
     const getLyrics = (trackID: string) => {
-        const lyricStart = randBetween(0, trackMap[trackID].lyrics.length - 3);
-        return trackMap[trackID].lyrics.slice(lyricStart, lyricStart + 3);
+        const track = trackMap[trackID];
+        if (track && track.lyrics) {
+            const lyricStart = randBetween(0, track.lyrics.length - 3);
+            return track.lyrics?.slice(lyricStart, lyricStart + 3);
+        }
+        // this case should never happen as empty ones are filtered out. Typescript is complaining
+        return [];
     };
 
     const chooseNewSong = () => {
-        let newRemaining = gameState.remainingTrackIDs;
+        let newRemaining = gameStateRef.current.remainingTrackIDs;
         let newID = newRemaining.pop();
         if (!newID) {
             newRemaining = [...trackIDs];
@@ -72,9 +77,7 @@ const Game: React.FC<GameProps> = ({ trackMap, ...props }: GameProps) => {
 
     // autocomplete managed events
     const onEnterPress = (input: string, acState: AutocompleteState) => {
-        console.log({ input, acState });
         if (input != "" && !acState.isMenuOpen && acState.keyboardOption == -1) {
-            console.log("sub,otted");
             submit(input);
         }
     };
@@ -91,13 +94,17 @@ const Game: React.FC<GameProps> = ({ trackMap, ...props }: GameProps) => {
         const currentTrack = trackMap[gameStateRef.current.currentTrackID];
         if (`${currentTrack.artist} - ${currentTrack.name}` === input) {
             setScore(score + 1);
-            setCorrect(true);
         } else {
-            setCorrect(false);
-            setGameFinished(true);
         }
         chooseNewSong();
     };
+
+    const finishGame = () => {
+        setGameFinished(true);
+
+        // TODO: save game to DB
+    }
+
     const autocompleteOptions = trackIDs.map((key: string) => `${trackMap[key].artist} - ${trackMap[key].name}`);
     return (
         <>
@@ -113,15 +120,9 @@ const Game: React.FC<GameProps> = ({ trackMap, ...props }: GameProps) => {
             </div>
             <div className={styles["bottom-container"]}>
                 <Autocomplete id={styles["guess-input"]} options={autocompleteOptions} onEnterPress={onEnterPress} onInputChange={acInputChange} />
-                <div
-                    className={`${styles["feedback-box"]} ${correct === undefined ? "" : !correct ? styles["incorrect"] : styles["correct"]}`}
-                    key={Math.random()}
-                >
-                    {correct === undefined ? "" : !correct ? "X" : "✓"}
-                </div>
 
                 <div className={styles["button-container"]}>
-                    <button className={`${styles["skip"]} ${buttonStyles["button"]}`} id="skip">
+                    <button className={`${styles["skip"]} ${buttonStyles["button"]}`} id="skip" onClick={finishGame}>
                         Give Up
                     </button>
                     <div className={styles["score-container"]}>
@@ -134,7 +135,7 @@ const Game: React.FC<GameProps> = ({ trackMap, ...props }: GameProps) => {
             </div>
             <Modal isOpen={isGameFinished}>
                 <div className={styles["win-modal"]}>
-                    <img id="track-image" src="#" alt="Album Photo" />
+                    <img id="track-image" src={trackMap[gameState.currentTrackID]?.imageURL} alt="Album Photo" />
                     <h2 id="track-name">{trackMap[gameState.currentTrackID]?.name}</h2>
                     <p id="streak-score">Final Streak: {score}</p>
                     <div className={styles["win-modal-buttons"]}>
