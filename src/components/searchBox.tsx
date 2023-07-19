@@ -14,13 +14,14 @@ export default function SearchBox({ runSearch }: { runSearch: (searchText: strin
 
         setTypingTimeout(
             setTimeout(() => {
+                if (searchText.replaceAll(" ", "").length < 3) return;
                 runSearch(searchText);
             }, 500)
         );
     };
 
     const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-        if (event.key === "Enter") {
+        if (event.key === "Enter" && searchText.replaceAll(" ", "").length > 0) {
             runSearch(searchText);
             if (typingTimeout) clearTimeout(typingTimeout);
         }
