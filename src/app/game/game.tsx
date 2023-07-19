@@ -1,8 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import React, { ChangeEvent, useEffect, useRef, useState } from "react";
-import styles from "./page.module.scss";
+import React, {  useEffect, useRef, useState } from "react";
+import styles from "./game.module.scss";
 import buttonStyles from "@/app/button.module.scss";
 import Autocomplete, { AutocompleteState } from "@/components/autocomplete";
 import { randBetween } from "@/lib/mathExtensions";
@@ -44,9 +44,6 @@ const Game: React.FC<GameProps> = ({ trackMap, ...props }: GameProps) => {
         setGameFinished(false);
         setScore(0);
         setGameState({ currentTrackID: firstID, remainingTrackIDs: remaining, lyricDisplay: getLyrics(firstID) });
-
-        console.log("loaded game");
-        console.log({ ref: gameStateRef.current, firstID });
     };
 
     const getLyrics = (trackID: string) => {
@@ -66,7 +63,6 @@ const Game: React.FC<GameProps> = ({ trackMap, ...props }: GameProps) => {
             newRemaining = [...trackIDs];
             newRemaining = shuffleArray(newRemaining);
             newID = newRemaining.pop();
-            console.log("rerun");
             if (!newID) {
                 console.log("error");
                 return;

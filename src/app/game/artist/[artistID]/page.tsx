@@ -1,6 +1,4 @@
-import { use } from "react";
-import Game from "./game";
-import { getLyrics } from "@/lib/spotify";
+import Game from "../../game";
 
 export default async function Home({ params }: any) {
     const artistID = params.artistID;

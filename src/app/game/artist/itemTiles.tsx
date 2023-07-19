@@ -17,9 +17,10 @@ export default function ItemTiles({ items, isLoading }: { items: SpotifyItem[]; 
                 items.map((item, index) => {
                     return (
                         <div key={Math.random()} className={styles["item-box"]} style={{ animationDelay: `${index * 0.05}s` }}>
-                            <Link href={`/game/artist/${item.id}`}>
+                            {/* a tag works better than Link here */}
+                            <a href={`/game/artist/${item.id}`}>
                                 <img src={item.imageURL} alt="artist" />
-                            </Link>
+                            </a>
                             <div>{item.name}</div>
                         </div>
                     );
