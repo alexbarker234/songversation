@@ -1,10 +1,10 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import React, {  useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import styles from "./game.module.scss";
 import buttonStyles from "@/app/button.module.scss";
-import Autocomplete, { AutocompleteState } from "@/components/autocomplete";
+import Autocomplete, { AutocompleteRef, AutocompleteState } from "@/components/autocomplete";
 import { randBetween } from "@/lib/mathExtensions";
 import Modal from "@/components/modal";
 import { useRouter } from "next/navigation";
@@ -14,13 +14,11 @@ interface GameProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const Game: React.FC<GameProps> = ({ trackMap, ...props }: GameProps) => {
     const router = useRouter();
-    const [score, setScore] = useState(0);
-    const [correct, setCorrect] = useState<boolean | undefined>(undefined);
-    const acInput = useRef("");
+    const acRef = useRef<AutocompleteRef>(null);
     const [submitEnabled, setSubmitEnabled] = useState(false);
     const [isGameFinished, setGameFinished] = useState(false);
     // in order to access with event listeners - event listeners only capture data thats in their current state so use a useRef
-    const [gameState, _setGameState] = useState<GameState>({ currentTrackID: "", remainingTrackIDs: [], lyricDisplay: ["", "", ""] });
+    const [gameState, _setGameState] = useState<GameState>({ currentTrackID: "", remainingTrackIDs: [], lyricDisplay: ["", "", ""], score: 0 });
     const gameStateRef = useRef(gameState);
     const setGameState = (data: GameState) => {
         gameStateRef.current = data;
@@ -29,6 +27,11 @@ const Game: React.FC<GameProps> = ({ trackMap, ...props }: GameProps) => {
 
     useEffect(() => {
         loadGame();
+
+        document.addEventListener("keydown", handleKeyboard, true);
+        return () => {
+            document.removeEventListener("keydown", handleKeyboard);
+        };
     }, []);
 
     const trackIDs = Object.keys(trackMap);
@@ -42,8 +45,7 @@ const Game: React.FC<GameProps> = ({ trackMap, ...props }: GameProps) => {
             return;
         }
         setGameFinished(false);
-        setScore(0);
-        setGameState({ currentTrackID: firstID, remainingTrackIDs: remaining, lyricDisplay: getLyrics(firstID) });
+        setGameState({ currentTrackID: firstID, remainingTrackIDs: remaining, lyricDisplay: getLyrics(firstID), score: 0 });
     };
 
     const getLyrics = (trackID: string) => {
@@ -71,35 +73,42 @@ const Game: React.FC<GameProps> = ({ trackMap, ...props }: GameProps) => {
         setGameState({ ...gameStateRef.current, currentTrackID: newID, remainingTrackIDs: newRemaining, lyricDisplay: getLyrics(newID) });
     };
 
-    // autocomplete managed events
-    const onEnterPress = (input: string, acState: AutocompleteState) => {
-        if (input != "" && !acState.isMenuOpen && acState.keyboardOption == -1) {
-            submit(input);
+    const setScore = (score: number) =>  setGameState({ ...gameStateRef.current, score});
+
+
+    const handleKeyboard = (event: KeyboardEvent) => {
+        if (event.key == "Enter") {
+            const input = acRef.current?.getSearchText();
+            // could use submitEnabled instead of autocompleteOptions.includes(input) but that would require another wacky useRef thing
+            if (input && input != ""  && autocompleteOptions.includes(input) && !acRef.current?.getIsUsingEnterKey()) submit(input);
         }
     };
+    // autocomplete managed events
     const acInputChange = (input: string, acState: AutocompleteState) => {
         setSubmitEnabled(autocompleteOptions.includes(input));
-        acInput.current = input;
     };
 
     const handleSubmitButton = (event: React.MouseEvent<HTMLElement>) => {
-        submit(acInput.current);
+        const input = acRef.current?.getSearchText();
+        if (input) submit(input);
     };
 
     const submit = (input: string) => {
         const currentTrack = trackMap[gameStateRef.current.currentTrackID];
         if (`${currentTrack.artist} - ${currentTrack.name}` === input) {
-            setScore(score + 1);
+            setScore(gameStateRef.current.score + 1);
+            chooseNewSong();
         } else {
+            finishGame();
         }
-        chooseNewSong();
+        acRef.current?.clearInput();
     };
 
     const finishGame = () => {
         setGameFinished(true);
 
         // TODO: save game to DB
-    }
+    };
 
     const autocompleteOptions = trackIDs.map((key: string) => `${trackMap[key].artist} - ${trackMap[key].name}`);
     return (
@@ -116,14 +125,14 @@ const Game: React.FC<GameProps> = ({ trackMap, ...props }: GameProps) => {
                 </div>
             </div>
             <div className={styles["bottom-container"]}>
-                <Autocomplete id={styles["guess-input"]} options={autocompleteOptions} onEnterPress={onEnterPress} onInputChange={acInputChange} />
+                <Autocomplete ref={acRef} id={styles["guess-input"]} options={autocompleteOptions} onInputChange={acInputChange} />
 
                 <div className={styles["button-container"]}>
                     <button className={`${styles["skip"]} ${buttonStyles["button"]}`} id="skip" onClick={finishGame}>
                         Give Up
                     </button>
                     <div className={styles["score-container"]}>
-                        <p className={styles["score-text"]}>{score}</p>
+                        <p className={styles["score-text"]}>{gameState.score}</p>
                     </div>
                     <button className={`${styles["submit"]} ${buttonStyles["button"]}`} id="submit" onClick={handleSubmitButton} disabled={!submitEnabled}>
                         Submit
@@ -134,7 +143,7 @@ const Game: React.FC<GameProps> = ({ trackMap, ...props }: GameProps) => {
                 <div className={styles["win-modal"]}>
                     <img id="track-image" src={trackMap[gameState.currentTrackID]?.imageURL} alt="Album Photo" />
                     <h2 id="track-name">{trackMap[gameState.currentTrackID]?.name}</h2>
-                    <p id="streak-score">Final Streak: {score}</p>
+                    <p id="streak-score">Final Streak: {gameState.score}</p>
                     <div className={styles["win-modal-buttons"]}>
                         <button type="button" className={`${buttonStyles["button"]} ${buttonStyles["grey"]}`} onClick={loadGame}>
                             Play Again?
@@ -155,6 +164,7 @@ interface GameState {
     currentTrackID: string;
     remainingTrackIDs: string[];
     lyricDisplay: string[];
+    score: number;
 }
 
 export default Game;
