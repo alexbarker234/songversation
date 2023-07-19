@@ -1,0 +1,28 @@
+.menu-tiles {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+
+    width: 95%;
+    max-width: 1000px;
+    margin: auto;
+    position: relative;
+
+    .menu-tile {
+        width: 20rem;
+        height: 10rem;
+        background-color: var(--bg-color2);
+        margin: 0.5rem;
+        padding: 1rem;
+        text-align: center;
+    }
+    .test-line {
+        width: 2px;
+        height: 100vh;
+        background-color: red;
+        position: absolute;
+        left: 50%;
+        top: 0%;
+        transform: translateX(-50%);
+    }
+}

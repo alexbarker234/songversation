@@ -6,5 +6,7 @@ export async function GET(req: Request) {
     const searchTerm = searchParams.get("search");
     if (!searchTerm) return NextResponse.json({ error: "error" }, { status: 400 });
 
-    return NextResponse.json(await searchArtist(searchTerm));
+    const searchResults = await searchArtist(searchTerm);
+    if (!searchResults) return NextResponse.json({ error: "error" }, { status: 500 });
+    return NextResponse.json(searchResults);
 }

@@ -164,7 +164,7 @@ export const getMultipleLyrics = async (trackIDs: string[]) => {
 
 const SEARCH_ENDPOINT = `https://api.spotify.com/v1/search`;
 
-export const searchArtist = async (searchTerm: string): Promise<Artist[]> => {
+export const searchArtist = async (searchTerm: string) => {
     const { access_token } = await getServerAccessToken();
 
     const response: SearchResponse = await (
@@ -175,6 +175,10 @@ export const searchArtist = async (searchTerm: string): Promise<Artist[]> => {
             next: { revalidate: 6000 },
         })
     ).json();
+    if (!response.artists) {
+        console.log(response); 
+        return;
+    }
     return response.artists.items.map((item) => <Artist>{ name: item.name, id: item.id, imageURL: item.images[0]?.url });
 };
 
