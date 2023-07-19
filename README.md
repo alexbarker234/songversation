@@ -1,6 +1,18 @@
-# Songversation - A NextJS port of our Flask CITS3403 Project
+# Songversation - A NextJS port of our CITS3403 Flask Project
+https://songversation.vercel.app/
 
 A lyric guessing game - powered by NextJS
+
+## Future Features
+- Filter out songs with the same lyrics (acoustics, remixes, etc) that aren't caught by current filter
+- Playlist search
+- User Log in 
+    - Previous game stats
+    - User playlists
+    - User followed artists
+    - Friends & Chat
+- Multi artist/playlist games
+- Multiplayer
 
 ## Setting up locally
 
