@@ -9,7 +9,7 @@ export default function ArtistList({ params }: any) {
     const [searchState, setState] = useState<"ok" | "searching" | "error">("ok");
 
     const search = async (searchText: string) => {
-        if (searchText.replaceAll(" ", "").length < 3) return;
+        if (searchText.replaceAll(" ", "").length < 3 && searchState != 'searching') return;
         setState("searching");
 
         const response = await fetch(`/api/search-artist?search=${searchText}`);

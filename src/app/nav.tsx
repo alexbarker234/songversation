@@ -13,7 +13,7 @@ export default function Nav({ userData }: { userData?: UserData }) {
                 <Link className={styles["logo"]} href="/">
                     songversation.
                 </Link>
-                {userData ? (
+                {/* {userData ? (
                     <div className={styles["nav-left"]}>
                         <div className={styles["profile-dropdown"]} onClick={() => setNavOpen(!isNavOpen)}>
                             <img className={styles["profile-image"]} src={`${userData}`} alt="pfp" />
@@ -29,7 +29,7 @@ export default function Nav({ userData }: { userData?: UserData }) {
                             <div className={styles["nav-login"]}>Log in</div>
                         </Link>
                     </div>
-                )}
+                )} */}
             </nav>
             {userData && (
                 <div className={`${styles["side-nav"]} ${!isNavOpen && styles["disabled"]}`} id="side-nav">

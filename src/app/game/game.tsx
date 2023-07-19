@@ -105,7 +105,8 @@ const Game: React.FC<GameProps> = ({ trackMap, ...props }: GameProps) => {
     return (
         <>
             <div {...props} className={styles["game-container"]}>
-                <p className={styles["title"]}>Which song is this?</p>
+                <div className={styles["title"]}>Which song is this?</div>
+                <div className={styles["track-count"]}>{trackIDs.length} tracks loaded</div>
                 <div className={styles["lyric-box"]} key={gameState.lyricDisplay[0]}>
                     {gameState.lyricDisplay.map((lyricLine, index) => (
                         <div key={index} className={styles["lyric-line"]}>

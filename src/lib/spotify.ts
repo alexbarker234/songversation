@@ -76,7 +76,7 @@ const fetchArtistAlbums = async (access_token: string, artistID: string) => {
     // the most stupid regex to filter out covers, remmixes, etc
     albums = albums.filter((album) => {
         const regex = /[\[\(].* ?(?:Rework|Remix|Version|Acoustic|Acapella|Unplugged|Live|Instrumental)[\]\)]/i;
-        return !regex.test(album.name) || album.name.toLowerCase() === "spotify singles";
+        return !regex.test(album.name) && album.name.toLowerCase() !== "spotify singles";
     });
 
     return albums;
