@@ -1,3 +1,9 @@
+.title {
+    font-size: 2em;
+    margin: 0;
+    margin-top: 1rem;
+    text-align: center;
+}
 .game-container {
     align-items: center;
     align-content: center;
@@ -9,12 +15,6 @@
     width: 100%;
     margin: 0px;
 
-
-    .title {
-        font-size: 2em;
-        margin: 0;
-        margin-top: 1rem;
-    }
     .track-count {
         font-size: 0.75rem;
         opacity: 0.5;

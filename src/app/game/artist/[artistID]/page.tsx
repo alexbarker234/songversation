@@ -1,7 +1,17 @@
+import { redirect } from "next/navigation";
 import Game from "../../game";
+import styles from "../../game.module.scss";
 
 export default async function Home({ params }: any) {
+
     const artistID = params.artistID;
+
+    //const artistInfo: 
+    const artistResponse = await fetch(`${process.env.URL}/api/get-artist?id=${artistID}`, { next: { revalidate: 6000 } })
+    if (!artistResponse.ok) redirect('/game/artist');    
+    const artistInfo: Artist = await artistResponse.json();
+    
+    console.log(artistInfo)
 
     const trackList: Track[] = await (await fetch(`${process.env.URL}/api/get-artist-songs?id=${artistID}`, { next: { revalidate: 6000 } })).json();
 
@@ -23,6 +33,7 @@ export default async function Home({ params }: any) {
     return (
         <>
             {/* <div>{JSON.stringify(data)}</div> */}
+            <div className={styles['title']}>Which {artistInfo.name} song is this?</div>
             <Game trackMap={trackMap}></Game>
         </>
     );

@@ -39,6 +39,26 @@ export const getTopTracks = async () => {
     });
 };
 
+const ARTIST_ENDPOINT = (id: string) => `https://api.spotify.com/v1/artists/${id}`;
+
+export const getArtist = async (id: string) => {
+    const { access_token } = await getServerAccessToken();
+
+    const response = await fetch(ARTIST_ENDPOINT(id), {
+        headers: {
+            Authorization: `Bearer ${access_token}`,
+        },
+    });
+    if (!response.ok) return;
+
+    const data: SpotifyArtistItem = await response.json();
+    console.log(data)
+
+    const artist: Artist = { id: data.id, imageURL: data.images[0]?.url, name: data.name };
+
+    return artist;
+};
+
 const ARTIST_ALBUMS_ENDPOINT = (id: string) => `https://api.spotify.com/v1/artists/${id}/albums?include_groups=album,single`;
 const ALBUM_TRACKS_ENDPOINT = (id: string) => `https://api.spotify.com/v1/albums/${id}/tracks?limit=50`;
 
@@ -176,7 +196,7 @@ export const searchArtist = async (searchTerm: string) => {
         })
     ).json();
     if (!response.artists) {
-        console.log(response); 
+        console.log(response);
         return;
     }
     return response.artists.items.map((item) => <Artist>{ name: item.name, id: item.id, imageURL: item.images[0]?.url });
