@@ -149,7 +149,7 @@ const fetchTracksFromAlbumList = async (access_token: string, albums: Album[]) =
     return tracks;
 };
 
-const LYRIC_ENDPOINT = `https://spotify-lyric-api.herokuapp.com/?trackid=`;
+const LYRIC_ENDPOINT = `https://spotify-lyric-api-984e7b4face0.herokuapp.com/?trackid=`;
 
 export const getLyrics = async (trackID: string) => {
     const response: LyricResponse = await (await fetch(LYRIC_ENDPOINT + trackID, { next: { revalidate: 6000 } })).json();
