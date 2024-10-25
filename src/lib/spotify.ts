@@ -1,10 +1,9 @@
 import querystring from "querystring";
 
-const client_id = process.env.SPOTIFY_CLIENT_ID;
-const client_secret = process.env.SPOTIFY_CLIENT_SECRET;
-const refresh_token = process.env.SPOTIFY_REFRESH_TOKEN;
+const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
+const CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
 
-const basic = Buffer.from(`${client_id}:${client_secret}`).toString("base64");
+const basic = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString("base64");
 const TOKEN_ENDPOINT = `https://accounts.spotify.com/api/token`;
 
 export const getServerAccessToken = async () => {
@@ -12,19 +11,19 @@ export const getServerAccessToken = async () => {
         method: "POST",
         headers: {
             Authorization: `Basic ${basic}`,
-            "Content-Type": "application/x-www-form-urlencoded",
+            "Content-Type": "application/x-www-form-urlencoded"
         },
         body: querystring.stringify({
-            grant_type: "refresh_token",
-            refresh_token,
+            grant_type: "client_credentials"
         }),
-        //cache: 'no-store'
         next: {
-            revalidate: 1000,
-        },
+            revalidate: 60 * 45
+        }
     });
 
-    return response.json();
+    const data = await response.json();
+
+    return data;
 };
 
 const TOP_TRACKS_ENDPOINT = `https://api.spotify.com/v1/me/top/tracks`;
@@ -34,8 +33,8 @@ export const getTopTracks = async () => {
 
     return fetch(TOP_TRACKS_ENDPOINT, {
         headers: {
-            Authorization: `Bearer ${access_token}`,
-        },
+            Authorization: `Bearer ${access_token}`
+        }
     });
 };
 
@@ -46,20 +45,21 @@ export const getArtist = async (id: string) => {
 
     const response = await fetch(ARTIST_ENDPOINT(id), {
         headers: {
-            Authorization: `Bearer ${access_token}`,
-        },
+            Authorization: `Bearer ${access_token}`
+        }
     });
     if (!response.ok) return;
 
     const data: SpotifyArtistItem = await response.json();
-    console.log(data)
+    console.log(data);
 
     const artist: Artist = { id: data.id, imageURL: data.images[0]?.url, name: data.name };
 
     return artist;
 };
 
-const ARTIST_ALBUMS_ENDPOINT = (id: string) => `https://api.spotify.com/v1/artists/${id}/albums?include_groups=album,single`;
+const ARTIST_ALBUMS_ENDPOINT = (id: string) =>
+    `https://api.spotify.com/v1/artists/${id}/albums?include_groups=album,single`;
 const ALBUM_TRACKS_ENDPOINT = (id: string) => `https://api.spotify.com/v1/albums/${id}/tracks?limit=50`;
 
 export const getArtistSongs = async (id: string) => {
@@ -81,9 +81,9 @@ const fetchArtistAlbums = async (access_token: string, artistID: string) => {
         const response: SpotifyArtistAlbumsResponse = await (
             await fetch(nextTracksEndpoint, {
                 headers: {
-                    Authorization: `Bearer ${access_token}`,
+                    Authorization: `Bearer ${access_token}`
                 },
-                next: { revalidate: 6000 },
+                next: { revalidate: 6000 }
             })
         ).json();
         albums.push(...response.items.map((item) => ({ id: item.id, imageURL: item.images[0]?.url, name: item.name })));
@@ -108,9 +108,9 @@ const fetchTracksFromAlbumList = async (access_token: string, albums: Album[]) =
     const requests = albums.map((album) => {
         return fetch(ALBUM_TRACKS_ENDPOINT(album.id), {
             headers: {
-                Authorization: `Bearer ${access_token}`,
+                Authorization: `Bearer ${access_token}`
             },
-            next: { revalidate: 6000 },
+            next: { revalidate: 6000 }
         }).then((res) => res.json());
     });
 
@@ -126,7 +126,7 @@ const fetchTracksFromAlbumList = async (access_token: string, albums: Album[]) =
                 id: item.id,
                 name: item.name,
                 artist: item.artists[0].name,
-                imageURL: album.imageURL,
+                imageURL: album.imageURL
             }))
         );
     });
@@ -149,39 +149,6 @@ const fetchTracksFromAlbumList = async (access_token: string, albums: Album[]) =
     return tracks;
 };
 
-const LYRIC_ENDPOINT = `https://spotify-lyric-api-984e7b4face0.herokuapp.com/?trackid=`;
-
-export const getLyrics = async (trackID: string) => {
-    const response: LyricResponse = await (await fetch(LYRIC_ENDPOINT + trackID, { next: { revalidate: 6000 } })).json();
-    if (response.error) return [];
-    let lyrics = response.lines.map((line) => line.words);
-    lyrics = lyrics.filter((e) => e != "♪");
-
-    return lyrics;
-};
-
-export const getMultipleLyrics = async (trackIDs: string[]) => {
-    const lyricMap: { [key: string]: string[] } = {};
-    const requests = trackIDs.map((trackID) => {
-        return fetch(LYRIC_ENDPOINT + trackID, { next: { revalidate: 6000 } }).then((res) => res.json());
-    });
-
-    const responses = await Promise.all(requests);
-
-    responses.forEach((response: LyricResponse, index) => {
-        const trackID = trackIDs[index];
-        if (response.error) {
-            lyricMap[trackID] = [];
-        } else {
-            let lyrics = response.lines.map((line) => line.words);
-            lyrics = lyrics.filter((e) => e !== "♪" && e !== "");
-            lyricMap[trackID] = lyrics;
-        }
-    });
-
-    return lyricMap;
-};
-
 const SEARCH_ENDPOINT = `https://api.spotify.com/v1/search`;
 
 export const searchArtist = async (searchTerm: string) => {
@@ -190,16 +157,75 @@ export const searchArtist = async (searchTerm: string) => {
     const response: SearchResponse = await (
         await fetch(SEARCH_ENDPOINT + `?q=${searchTerm}&type=artist&limit=20`, {
             headers: {
-                Authorization: `Bearer ${access_token}`,
+                Authorization: `Bearer ${access_token}`
             },
-            next: { revalidate: 6000 },
+            next: { revalidate: 6000 }
         })
     ).json();
     if (!response.artists) {
         console.log(response);
         return;
     }
-    return response.artists.items.map((item) => <Artist>{ name: item.name, id: item.id, imageURL: item.images[0]?.url });
+    return response.artists.items.map(
+        (item) => <Artist>{ name: item.name, id: item.id, imageURL: item.images[0]?.url }
+    );
+};
+
+export const fetchTrackByID = async (trackID: string) => {
+    const { access_token } = await getServerAccessToken();
+
+    const trackEndpoint = `https://api.spotify.com/v1/tracks/${trackID}`;
+    let trackData: Track | null = null;
+
+    try {
+        const response: SpotifyTrackItem = await (
+            await fetch(trackEndpoint, {
+                cache: "force-cache",
+                headers: {
+                    Authorization: `Bearer ${access_token}`
+                }
+            })
+        ).json();
+
+        trackData = {
+            id: response.id,
+            name: response.name,
+            artist: response.artists[0].name,
+            imageURL: response.album.images[0]?.url
+        };
+    } catch (error) {
+        console.error(`Failed to fetch track with ID ${trackID}:`, error);
+    }
+
+    return trackData;
+};
+
+export const fetchTracksByIDs = async (trackIDs: string[]) => {
+    const { access_token } = await getServerAccessToken();
+    const trackEndpoint = `https://api.spotify.com/v1/tracks`;
+
+    try {
+        const response = await fetch(`${trackEndpoint}?ids=${trackIDs.join(",")}`, {
+            cache: "force-cache",
+            headers: {
+                Authorization: `Bearer ${access_token}`
+            }
+        });
+
+        const data: { tracks: SpotifyTrackItem[] } = await response.json();
+
+        const tracksData = data.tracks.map((track) => ({
+            id: track.id,
+            name: track.name,
+            artist: track.artists[0].name,
+            imageURL: track.album.images[0]?.url
+        }));
+
+        return tracksData;
+    } catch (error) {
+        console.error(`Failed to fetch tracks with IDs ${trackIDs.join(", ")}:`, error);
+        return null;
+    }
 };
 
 interface SearchResponse {
@@ -226,6 +252,7 @@ interface SpotifyTrackItem {
     id: string;
     name: string;
     artists: SpotifyTrackArtist[];
+    album: SpotifyAlbumItem;
 }
 interface SpotifyAlbumItem {
     id: string;

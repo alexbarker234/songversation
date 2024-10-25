@@ -1,4 +1,5 @@
-import { getLyrics } from "@/lib/spotify";
+import { getLyrics } from "@/lib/lyrics";
+import { fetchTrackByID } from "@/lib/spotify";
 import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
@@ -6,5 +7,10 @@ export async function GET(req: Request) {
     const id = searchParams.get("id");
     if (!id) return;
 
-    return NextResponse.json(await getLyrics(id));
+    // Fetch track
+    const track = await fetchTrackByID(id);
+    if (!track) return NextResponse.json({ error: "Track not found" }, { status: 404 });
+
+    const lyrics = await getLyrics(track.artist, track.name);
+    return NextResponse.json(lyrics);
 }

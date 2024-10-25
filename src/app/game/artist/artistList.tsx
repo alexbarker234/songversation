@@ -4,12 +4,12 @@ import ItemTiles from "./itemTiles";
 import SearchBox from "@/components/searchBox";
 import styles from "./page.module.scss";
 
-export default function ArtistList({ params }: any) {
+export default function ArtistList() {
     const [artistList, setArtistList] = useState<Artist[]>([]);
     const [searchState, setState] = useState<"ok" | "searching" | "error">("ok");
 
     const search = async (searchText: string) => {
-        if (searchState == 'searching') return;
+        if (searchState == "searching") return;
         setState("searching");
 
         const response = await fetch(`/api/search-artist?search=${searchText}`);
@@ -27,7 +27,11 @@ export default function ArtistList({ params }: any) {
     return (
         <>
             <SearchBox runSearch={search} />
-            {searchState === "error" ? <div className={styles["error"]}>!</div> : <ItemTiles items={artistList} isLoading={searchState === "searching"}></ItemTiles>}
+            {searchState === "error" ? (
+                <div className={styles["error"]}>!</div>
+            ) : (
+                <ItemTiles items={artistList} isLoading={searchState === "searching"}></ItemTiles>
+            )}
         </>
     );
 }
