@@ -2,22 +2,16 @@ import { redirect } from "next/navigation";
 import Game from "../../game";
 import styles from "../../game.module.scss";
 import { getMultipleLyrics } from "@/lib/lyrics";
+import { getArtist, getArtistSongs } from "@/lib/spotify";
 
-export default async function Home({ params }: { params: { artistID: string } }) {
+export default async function Home({ params }: { params: Promise<{ artistID: string }> }) {
     const { artistID } = await params;
 
     //const artistInfo:
-    const artistResponse = await fetch(`${process.env.URL}/api/get-artist?id=${artistID}`, {
-        next: { revalidate: 6000 }
-    });
-    if (!artistResponse.ok) redirect("/game/artist");
-    const artistInfo: Artist = await artistResponse.json();
+    const artist = await getArtist(artistID);
+    if (!artist) redirect("/game/artist");
 
-    console.log(artistInfo);
-
-    const trackList: Track[] = await (
-        await fetch(`${process.env.URL}/api/get-artist-songs?id=${artistID}`, { next: { revalidate: 6000 } })
-    ).json();
+    const trackList = await getArtistSongs(artistID);
 
     let trackMap: TrackMap = trackList.reduce((map, track) => {
         map[track.id] = track;
@@ -46,7 +40,7 @@ export default async function Home({ params }: { params: { artistID: string } })
     return (
         <>
             {/* <div>{JSON.stringify(data)}</div> */}
-            <div className={styles["title"]}>Which {artistInfo.name} song is this?</div>
+            <div className={styles["title"]}>Which {artist.name} song is this?</div>
             <Game trackMap={trackMap}></Game>
         </>
     );
