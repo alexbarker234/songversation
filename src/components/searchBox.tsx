@@ -1,46 +1,59 @@
-"use client";
+import { cn } from "@/utils/cn";
+import { ChangeEvent, KeyboardEvent, useRef, useState } from "react";
+import { FaSearch } from "react-icons/fa";
+import { useDebouncedCallback } from "use-debounce";
 
-import { ChangeEvent, KeyboardEvent, useEffect, useState } from "react";
+interface SearchBoxProps {
+  className?: string;
+  placeholder?: string;
+  runSearch: (searchText: string) => void;
+}
 
-export default function SearchBox({ runSearch }: { runSearch: (searchText: string) => void }) {
+export default function SearchBox({ className, placeholder, runSearch }: SearchBoxProps) {
   const [searchText, setSearchText] = useState("");
-  const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const debouncedSearch = useDebouncedCallback((text: string) => {
+    if (text.replaceAll(" ", "").length >= 3) {
+      runSearch(text);
+    }
+  }, 300);
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setSearchText(event.target.value);
-
-    if (typingTimeout) clearTimeout(typingTimeout);
-
-    setTypingTimeout(
-      setTimeout(() => {
-        if (searchText.replaceAll(" ", "").length < 3) return;
-        runSearch(searchText);
-      }, 500)
-    );
+    const value = event.target.value;
+    setSearchText(value);
+    debouncedSearch(value);
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter" && searchText.replaceAll(" ", "").length > 0) {
       runSearch(searchText);
-      if (typingTimeout) clearTimeout(typingTimeout);
+      debouncedSearch.cancel();
     }
   };
 
-  useEffect(() => {
-    return () => {
-      if (typingTimeout) clearTimeout(typingTimeout);
-    };
-  }, [typingTimeout]);
+  const handleMouseDown = (event: React.MouseEvent) => {
+    event.preventDefault();
+    inputRef.current?.focus();
+  };
 
   return (
-    <div className="mx-auto my-8 w-[95%] max-w-[700px]">
+    <div
+      className={cn(
+        "group relative mx-auto my-8 flex w-[95%] max-w-3xl cursor-text items-center rounded-full bg-grey-light outline-2 focus-within:outline focus-within:outline-white",
+        className
+      )}
+      onMouseDown={handleMouseDown}
+    >
+      <FaSearch size={24} className="ml-4 text-gray-400 transition-colors group-focus-within:text-white" />
       <input
+        ref={inputRef}
         type="text"
         value={searchText}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
-        placeholder="Search..."
-        className="font-inherit h-full w-full border-none bg-[var(--bg-color3)] p-3 text-inherit text-white outline-none"
+        placeholder={placeholder ?? "Search..."}
+        className="font-inherit h-full w-full bg-transparent p-3 text-inherit text-white outline-none"
       />
     </div>
   );
