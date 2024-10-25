@@ -1,8 +1,7 @@
-import { redirect } from "next/navigation";
-import Game from "../../game";
-import styles from "../../game.module.scss";
 import { getMultipleLyrics } from "@/lib/lyrics";
 import { getArtist, getArtistSongs } from "@/lib/spotify";
+import { redirect } from "next/navigation";
+import Game from "../../game";
 
 export default async function Home({ params }: { params: { artistID: string } }) {
   const { artistID } = params;
@@ -40,7 +39,9 @@ export default async function Home({ params }: { params: { artistID: string } })
   return (
     <>
       {/* <div>{JSON.stringify(data)}</div> */}
-      <div className={styles["title"]}>Which {artist.name} song is this?</div>
+      <div className="my-4 text-center text-3xl">
+        Which <span className="font-semibold">{artist.name}</span> song is this?
+      </div>
       <Game trackMap={trackMap}></Game>
     </>
   );

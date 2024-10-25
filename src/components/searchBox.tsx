@@ -1,7 +1,6 @@
 "use client";
 
 import { ChangeEvent, KeyboardEvent, useEffect, useState } from "react";
-import styles from "./searchBox.module.scss";
 
 export default function SearchBox({ runSearch }: { runSearch: (searchText: string) => void }) {
   const [searchText, setSearchText] = useState("");
@@ -34,13 +33,14 @@ export default function SearchBox({ runSearch }: { runSearch: (searchText: strin
   }, [typingTimeout]);
 
   return (
-    <div className={styles["artist-search"]}>
+    <div className="mx-auto my-8 w-[95%] max-w-[700px]">
       <input
         type="text"
         value={searchText}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
         placeholder="Search..."
+        className="font-inherit h-full w-full border-none bg-[var(--bg-color3)] p-3 text-inherit text-white outline-none"
       />
     </div>
   );

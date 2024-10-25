@@ -1,7 +1,7 @@
-import "./globals.scss";
-import "./globals.css";
+import Nav from "@/components/Header";
 import type { Metadata } from "next";
-import Nav from "./nav";
+import "./globals.css";
+import "./globals.scss";
 
 export const metadata: Metadata = {
   title: "Songversation",
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>
+      <body className="flex h-screen flex-col">
         <Nav />
         {children}
       </body>

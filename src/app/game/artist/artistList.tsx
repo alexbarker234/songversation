@@ -1,7 +1,7 @@
 "use client";
+import SearchBox from "@/components/searchBox";
 import { useState } from "react";
 import ItemTiles from "./itemTiles";
-import SearchBox from "@/components/searchBox";
 import styles from "./page.module.scss";
 
 export default function ArtistList() {
@@ -12,7 +12,7 @@ export default function ArtistList() {
     if (searchState == "searching") return;
     setState("searching");
 
-    const response = await fetch(`/api/search-artist?search=${searchText}`);
+    const response = await fetch(`/api/artist/search?search=${searchText}`);
     if (!response.ok) {
       setState("error");
       return;
