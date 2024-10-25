@@ -8,7 +8,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function Game({ trackMap }: { trackMap: TrackMap }) {
-  // STATE
   const [selected, setSelected] = useState<AutocompleteOption | null>(null);
   const {
     currentTrackID,
@@ -21,11 +20,6 @@ export default function Game({ trackMap }: { trackMap: TrackMap }) {
     setScore,
     finishGame
   } = useGame(trackMap);
-
-  // REFS
-  // const acRef = useRef<AutocompleteRef>(null);
-
-  // OTHER
   const router = useRouter();
 
   const autocompleteOptions = Object.keys(trackMap).map((key) => ({
@@ -60,6 +54,11 @@ export default function Game({ trackMap }: { trackMap: TrackMap }) {
     } else {
       finishGame();
     }
+    setSelected(null);
+  };
+
+  const restart = () => {
+    loadGame();
     setSelected(null);
   };
 
@@ -100,7 +99,7 @@ export default function Game({ trackMap }: { trackMap: TrackMap }) {
       </div>
 
       <Modal isOpen={isGameFinished}>
-        <div className="w-11/12 max-w-md rounded-md bg-[var(--bg-color)] p-4 text-center">
+        <div className="max-w-md rounded-lg bg-grey p-8 text-center text-white">
           <img
             id="track-image"
             src={trackMap[currentTrackID]?.imageURL}
@@ -113,9 +112,13 @@ export default function Game({ trackMap }: { trackMap: TrackMap }) {
           <p id="streak-score" className="mb-4">
             Final Streak: {score}
           </p>
-          <div className="flex justify-evenly">
-            <Button onClick={loadGame}>Play Again?</Button>
-            <Button onClick={() => router.push("/")}>Return Home</Button>
+          <div className="flex justify-evenly gap-6">
+            <Button variant="green" onClick={restart}>
+              Play Again?
+            </Button>
+            <Button variant="bordered" onClick={() => router.push("/")}>
+              Return Home
+            </Button>
           </div>
         </div>
       </Modal>

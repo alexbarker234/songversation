@@ -12,7 +12,7 @@ type AutocompleteProps = {
   options: AutocompleteOption[];
   selected: AutocompleteOption | null;
   className?: string;
-  onSelect: (option: AutocompleteOption) => void;
+  onSelect: (option: AutocompleteOption | null) => void;
 };
 
 const Autocomplete: React.FC<AutocompleteProps> = ({ options, selected, className, onSelect }) => {
@@ -25,8 +25,16 @@ const Autocomplete: React.FC<AutocompleteProps> = ({ options, selected, classNam
   const inputRef = useRef<HTMLInputElement>(null);
   const resultsListRef = useRef<HTMLUListElement>(null);
 
+  const handleBlur = () => {
+    if (searchText === "") {
+      onSelect(null);
+    }
+    setIsMenuOpen(false);
+    setSearchText(selected?.label ?? "");
+  };
+
   // Close when clicking off
-  useClickOutside([inputRef, resultsListRef], () => setIsMenuOpen(false), isMenuOpen);
+  useClickOutside([inputRef, resultsListRef], handleBlur, isMenuOpen);
 
   useEffect(() => {
     setFilteredOptions(options.filter((option) => option.label.toLowerCase().includes(searchText.toLowerCase())));
@@ -82,25 +90,26 @@ const Autocomplete: React.FC<AutocompleteProps> = ({ options, selected, classNam
         value={searchText}
         onChange={handleInputChange}
         onKeyDown={handleKeyboard}
+        onBlur={handleBlur}
         placeholder="Search..."
-        className="h-full w-full bg-grey-light p-3 text-white outline-none"
+        className="w-full rounded-lg border-none bg-grey-light p-3 text-white placeholder-gray-400 outline-none transition-colors duration-150 focus:outline focus:outline-primary"
       />
       {filteredOptions.length > 0 && isMenuOpen && (
         <ul
-          className={`absolute bottom-full left-0 z-10 max-h-80 w-full list-none overflow-y-scroll bg-grey-light ${
+          ref={resultsListRef}
+          className={`absolute bottom-full left-0 z-10 mb-2 max-h-80 w-full overflow-y-auto rounded-lg bg-grey-light shadow-lg ${
             isMenuOpen ? "block" : "hidden"
           }`}
-          ref={resultsListRef}
         >
           {filteredOptions.map((option, index) => (
             <li
               key={option.id}
               onClick={() => handleOptionClick(option)}
-              className={`flex cursor-pointer items-center px-4 py-2 ${
-                keyboardOption === index ? "border border-primary" : "hover:bg-grey"
+              className={`cursor-pointer px-4 py-2 text-white transition-colors duration-150 hover:bg-primary hover:text-black ${
+                keyboardOption === index ? "bg-primary font-semibold text-black" : "bg-grey-light"
               }`}
             >
-              <div>{option.label}</div>
+              {option.label}
             </li>
           ))}
         </ul>

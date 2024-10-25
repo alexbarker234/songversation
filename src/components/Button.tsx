@@ -1,7 +1,7 @@
 import { cva, VariantProps } from "class-variance-authority";
 
 const buttonVariants = cva(
-  `w-64 p-2 rounded-full transition-transform duration-200 disabled:cursor-default disabled:opacity-50 enabled:hover:scale-105`,
+  `w-64 p-2 rounded-full transition-transform duration-200 disabled:cursor-default disabled:opacity-50 enabled:hover:scale-105 font-bold`,
   {
     variants: {
       variant: {
