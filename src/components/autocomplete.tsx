@@ -1,15 +1,70 @@
 "use client";
 
-import React, { ChangeEvent, KeyboardEvent, useEffect, useRef, useState, forwardRef, useImperativeHandle } from "react";
-import styles from "./autocomplete.module.scss";
 import { betterMod } from "@/lib/mathExtensions";
+import { cn } from "@/utils/cn";
+import React, { ChangeEvent, forwardRef, KeyboardEvent, useEffect, useImperativeHandle, useRef, useState } from "react";
+
+export interface AutocompleteInput {
+  id: string;
+  label: string;
+}
+
 export interface AutocompleteState {
   isMenuOpen: boolean;
   isInputInFocus: boolean;
   searchText: string;
   keyboardOption: number;
-  results: string[];
+  results: AutocompleteInput[];
 }
+
+export const useAutocompleteState = (
+  options: AutocompleteInput[],
+  onInputChange?: (input: string, autocompleteState: AutocompleteState) => void
+) => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isInputInFocus, setIsInputInFocus] = useState(false);
+  const [searchText, setSearchText] = useState("");
+  const [keyboardOption, setKeyboardOption] = useState(-1);
+  const [results, setResults] = useState<AutocompleteInput[]>([]);
+  const acStateRef = useRef({ isMenuOpen, isInputInFocus, searchText, keyboardOption, results });
+
+  const punctuationRegex = /[^\w\s]/g;
+
+  const filterResults = (search: string) =>
+    (search.replaceAll(punctuationRegex, "") === ""
+      ? []
+      : options.filter((e) =>
+          e.label
+            .toLowerCase()
+            .replaceAll(punctuationRegex, "")
+            .includes(search.toLowerCase().replaceAll(punctuationRegex, ""))
+        )
+    ).slice(0, 15);
+
+  const changeState = (newSearchText: string, openMenu: boolean) => {
+    setSearchText(newSearchText);
+    setIsMenuOpen(openMenu);
+    setResults(filterResults(newSearchText));
+    if (onInputChange) onInputChange(newSearchText, acStateRef.current);
+  };
+
+  useEffect(() => {
+    acStateRef.current = { isMenuOpen, isInputInFocus, searchText, keyboardOption, results };
+  }, [isMenuOpen, isInputInFocus, searchText, keyboardOption, results]);
+
+  return {
+    acStateRef,
+    isMenuOpen,
+    setIsMenuOpen,
+    isInputInFocus,
+    setIsInputInFocus,
+    searchText,
+    setSearchText: changeState,
+    keyboardOption,
+    setKeyboardOption,
+    results
+  };
+};
 
 export type AutocompleteRef = {
   clearInput: () => void;
@@ -18,17 +73,21 @@ export type AutocompleteRef = {
 } | null;
 
 interface AutocompleteProps extends React.HTMLAttributes<HTMLDivElement> {
-  options: string[];
+  options: AutocompleteInput[];
   onInputChange?: (input: string, autocompleteState: AutocompleteState) => void;
 }
 
 const Autocomplete = forwardRef<AutocompleteRef, AutocompleteProps>(({ options, onInputChange, ...props }, ref) => {
-  useEffect(() => {
-    document.addEventListener("click", handleClickOutside, true);
-    return () => {
-      document.removeEventListener("click", handleClickOutside);
-    };
-  }, []);
+  const {
+    acStateRef,
+    isMenuOpen,
+    setIsMenuOpen,
+    searchText,
+    setSearchText,
+    keyboardOption,
+    setKeyboardOption,
+    results
+  } = useAutocompleteState(options, onInputChange);
 
   const acRefInternal = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -36,83 +95,39 @@ const Autocomplete = forwardRef<AutocompleteRef, AutocompleteProps>(({ options, 
   const isUsingEnterKey = useRef(false);
   const isUsingEnterKeyTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  const [acState, _setState] = useState<AutocompleteState>({
-    isMenuOpen: false,
-    searchText: "",
-    results: [],
-    keyboardOption: -1,
-    isInputInFocus: false
-  });
-  const acStateRef = useRef(acState);
-  const setState = (data: AutocompleteState) => {
-    acStateRef.current = data;
-    _setState(data);
-  };
-
-  const punctuationRegex = /[^\w\s]/g;
-  // returns only 15 results
-  const filterResults = (search: string) =>
-    (search.replaceAll(punctuationRegex, "") === ""
-      ? []
-      : options.filter((e) =>
-          e
-            .toLowerCase()
-            .replaceAll(punctuationRegex, "")
-            .includes(search.toLowerCase().replaceAll(punctuationRegex, ""))
-        )
-    ).slice(0, 15);
-
-  const changeState = (searchText: string, isMenuOpen: boolean) => {
-    if (onInputChange) onInputChange(searchText, acStateRef.current);
-    setState({
-      ...acState,
-      searchText,
-      results: filterResults(searchText),
-      isMenuOpen
-    });
-  };
-  // react events
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    changeState(event.target.value, true);
+    setSearchText(event.target.value, true);
   };
 
   const handleOptionClick = (event: React.MouseEvent<HTMLElement>) => {
     const element = event.target as HTMLUListElement;
-    changeState(element.innerHTML, false);
+    const selectedOption = results.find((option) => option.label === element.innerHTML);
+    if (selectedOption) {
+      setSearchText(selectedOption.label, false);
+    }
     if (inputRef.current) inputRef.current.focus();
   };
 
-  // document event listeners - must use ref not useState
   const handleClickOutside = (event: MouseEvent) => {
     if (!acRefInternal.current) return;
     if (acRefInternal.current.contains(event.target as HTMLDivElement)) {
-      setState({
-        ...acStateRef.current,
-        isMenuOpen: true
-      });
+      setIsMenuOpen(true);
     } else {
-      setState({
-        ...acStateRef.current,
-        isMenuOpen: false,
-        keyboardOption: -1
-      });
+      setIsMenuOpen(false);
+      setKeyboardOption(-1);
     }
   };
 
   const handleKeyboard = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (isNaN(acStateRef.current.keyboardOption)) setKeyboardOption(0);
+    if (isNaN(keyboardOption)) setKeyboardOption(0);
 
     if (event.key === "ArrowUp" || event.key === "ArrowDown") {
       event.preventDefault();
-      if (event.key === "ArrowUp") {
-        if (acStateRef.current.keyboardOption == -1) setKeyboardOption(0);
-        setKeyboardOption(betterMod(acStateRef.current.keyboardOption - 1, acStateRef.current.results.length));
-      } else if (event.key === "ArrowDown") {
-        setKeyboardOption(betterMod(acStateRef.current.keyboardOption + 1, acStateRef.current.results.length));
-      }
-      // scroll to top of selected child
+      const newOption = event.key === "ArrowUp" ? keyboardOption - 1 : keyboardOption + 1;
+      setKeyboardOption(betterMod(newOption, results.length));
+
       if (resultsListRef.current) {
-        const selectedItem = resultsListRef.current.children[acStateRef.current.keyboardOption] as HTMLUListElement;
+        const selectedItem = resultsListRef.current.children[keyboardOption] as HTMLUListElement;
         resultsListRef.current.scrollTo({
           behavior: "smooth",
           top: selectedItem.offsetTop
@@ -120,54 +135,51 @@ const Autocomplete = forwardRef<AutocompleteRef, AutocompleteProps>(({ options, 
       }
     } else if (event.key === "Enter") {
       event.preventDefault();
-      if (acStateRef.current.keyboardOption != -1) {
-        changeState(acStateRef.current.results[acStateRef.current.keyboardOption], false);
-        // manage enter key holding
+      if (keyboardOption != -1) {
+        const selectedOption = results[keyboardOption];
+        setSearchText(selectedOption.label, false);
         isUsingEnterKey.current = true;
         if (isUsingEnterKeyTimeout.current) clearTimeout(isUsingEnterKeyTimeout.current);
         isUsingEnterKeyTimeout.current = setTimeout(() => (isUsingEnterKey.current = false), 100);
-        // reset keyboard controls
-        acStateRef.current.keyboardOption = -1;
+        setKeyboardOption(-1);
       }
     }
-    if (acStateRef.current.keyboardOption != -1) {
-      isUsingEnterKey.current = true;
-    }
   };
-  const setKeyboardOption = (keyboardOption: number) => setState({ ...acStateRef.current, keyboardOption });
 
-  // functions that can be called via creating a ref to this component
   useImperativeHandle(ref, () => ({
     clearInput: () => {
-      changeState("", false);
+      setSearchText("", false);
     },
-    getSearchText: () => acStateRef.current?.searchText,
+    getSearchText: () => acStateRef.current.searchText,
     getIsUsingEnterKey: () => isUsingEnterKey.current
   }));
 
   return (
-    <div
-      ref={acRefInternal}
-      {...props}
-      className={`${styles["autocomplete"]} ${acState.isMenuOpen ? styles["focus"] : ""}`}
-    >
+    <div ref={acRefInternal} {...props} className={`relative ${isMenuOpen ? "focus" : ""}`}>
       <input
         ref={inputRef}
         type="text"
-        value={acState.searchText}
+        value={searchText}
         onChange={handleInputChange}
         onKeyDown={handleKeyboard}
         placeholder="Search..."
+        className="h-full w-full bg-grey-light p-3 text-white outline-none"
       />
-      {acState.results.length > 0 && (
-        <ul className={styles["autocomplete-results"]} ref={resultsListRef}>
-          {acState.results.map((result, index) => (
+      {results.length > 0 && (
+        <ul
+          className={`absolute bottom-full left-0 z-10 max-h-80 w-full list-none overflow-y-scroll bg-grey-light ${isMenuOpen ? "block" : "hidden"}`}
+          ref={resultsListRef}
+        >
+          {results.map((result, index) => (
             <li
-              key={index}
+              key={result.id}
               onClick={handleOptionClick}
-              className={acState.keyboardOption === index ? styles["selected"] : undefined}
+              className={cn("flex cursor-pointer items-center px-4 py-2", {
+                "border border-primary": keyboardOption === index,
+                "hover:bg-grey": keyboardOption !== index
+              })}
             >
-              {result}
+              <div>{result.label}</div>
             </li>
           ))}
         </ul>
@@ -175,6 +187,7 @@ const Autocomplete = forwardRef<AutocompleteRef, AutocompleteProps>(({ options, 
     </div>
   );
 });
-Autocomplete.displayName = "Autocompletez";
+
+Autocomplete.displayName = "Autocomplete";
 
 export default Autocomplete;

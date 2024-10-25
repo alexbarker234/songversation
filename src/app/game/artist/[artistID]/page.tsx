@@ -4,8 +4,8 @@ import styles from "../../game.module.scss";
 import { getMultipleLyrics } from "@/lib/lyrics";
 import { getArtist, getArtistSongs } from "@/lib/spotify";
 
-export default async function Home({ params }: { params: Promise<{ artistID: string }> }) {
-  const { artistID } = await params;
+export default async function Home({ params }: { params: { artistID: string } }) {
+  const { artistID } = params;
 
   //const artistInfo:
   const artist = await getArtist(artistID);
