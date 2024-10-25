@@ -4,7 +4,7 @@ import Nav from "./nav";
 
 export const metadata: Metadata = {
     title: "Songversation",
-    description: "A NextJS port from Flask",
+    description: "A Spotify lyric guessing game"
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

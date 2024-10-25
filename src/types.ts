@@ -4,10 +4,10 @@ interface Track {
     artist: string;
     name: string;
     imageURL: string;
-    lyrics?: string[]
+    lyrics?: string[];
 }
 interface TrackMap {
-    [key: string]: Track
+    [key: string]: Track;
 }
 // ALBUM
 interface Album {
@@ -31,9 +31,9 @@ interface SpotifyItem {
 }
 // LYRIC
 interface LyricMap {
-    [key: string]: string[]
+    [key: string]: string[];
 }
 // USER
 interface UserData {
-    name: string
+    name: string;
 }

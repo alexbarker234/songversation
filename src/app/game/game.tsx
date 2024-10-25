@@ -12,7 +12,12 @@ interface GameProps extends React.HTMLAttributes<HTMLDivElement> {
     trackMap: TrackMap;
 }
 
-const shuffleArray = (array: any[]) => array.sort(() => Math.random() - 0.5);
+function shuffleArray(array: any[]) {
+    for (let i = array.length - 1; i >= 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
 
 interface GameState {
     currentTrackID: string;
@@ -52,7 +57,8 @@ export default function Game({ trackMap, ...props }: GameProps) {
 
     const loadGame = () => {
         let remaining = [...trackIDs];
-        remaining = shuffleArray(remaining);
+        shuffleArray(remaining);
+
         const firstID = remaining.pop();
         if (!firstID) {
             console.log("error");
@@ -82,7 +88,7 @@ export default function Game({ trackMap, ...props }: GameProps) {
         let newID = newRemaining.pop();
         if (!newID) {
             newRemaining = [...trackIDs];
-            newRemaining = shuffleArray(newRemaining);
+            shuffleArray(newRemaining);
             newID = newRemaining.pop();
             if (!newID) {
                 console.log("error");
@@ -180,7 +186,7 @@ export default function Game({ trackMap, ...props }: GameProps) {
                     <div className={styles["win-modal-buttons"]}>
                         <button
                             type="button"
-                            className={`${buttonStyles["button"]} ${buttonStyles["grey"]}`}
+                            className={`${buttonStyles["button"]} ${buttonStyles["green"]}`}
                             onClick={loadGame}
                         >
                             Play Again?

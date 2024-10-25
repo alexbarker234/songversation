@@ -4,6 +4,7 @@
     margin-top: 1rem;
     text-align: center;
 }
+
 .game-container {
     align-items: center;
     align-content: center;
@@ -64,7 +65,8 @@
             &:not(:last-child) {
                 border-bottom: 2px var(--bg-color) solid;
             }
-            &:hover{
+
+            &:hover {
                 scale: 1.01;
             }
         }
@@ -192,6 +194,7 @@
     max-width: 500px;
     background-color: var(--bg-color);
     padding: 1rem;
+
     img {
         margin: auto;
         display: block;
@@ -199,9 +202,11 @@
         height: 350px;
         background-color: black;
     }
+
     .win-modal-buttons {
         display: flex;
         justify-content: space-evenly;
+
         button {
             width: 8rem;
         }

@@ -35,7 +35,13 @@ export default function SearchBox({ runSearch }: { runSearch: (searchText: strin
 
     return (
         <div className={styles["artist-search"]}>
-            <input type="text" value={searchText} onChange={handleInputChange} onKeyDown={handleKeyDown} placeholder="Search..." />
+            <input
+                type="text"
+                value={searchText}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+                placeholder="Search..."
+            />
         </div>
     );
 }

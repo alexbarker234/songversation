@@ -36,7 +36,13 @@ const Autocomplete = forwardRef<AutocompleteRef, AutocompleteProps>(({ options, 
     const isUsingEnterKey = useRef(false);
     const isUsingEnterKeyTimeout = useRef<NodeJS.Timeout | null>(null);
 
-    const [acState, _setState] = useState<AutocompleteState>({ isMenuOpen: false, searchText: "", results: [], keyboardOption: -1, isInputInFocus: false });
+    const [acState, _setState] = useState<AutocompleteState>({
+        isMenuOpen: false,
+        searchText: "",
+        results: [],
+        keyboardOption: -1,
+        isInputInFocus: false
+    });
     const acStateRef = useRef(acState);
     const setState = (data: AutocompleteState) => {
         acStateRef.current = data;
@@ -48,7 +54,12 @@ const Autocomplete = forwardRef<AutocompleteRef, AutocompleteProps>(({ options, 
     const filterResults = (search: string) =>
         (search.replaceAll(punctuationRegex, "") === ""
             ? []
-            : options.filter((e) => e.toLowerCase().replaceAll(punctuationRegex, "").includes(search.toLowerCase().replaceAll(punctuationRegex, "")))
+            : options.filter((e) =>
+                  e
+                      .toLowerCase()
+                      .replaceAll(punctuationRegex, "")
+                      .includes(search.toLowerCase().replaceAll(punctuationRegex, ""))
+              )
         ).slice(0, 15);
 
     const changeState = (searchText: string, isMenuOpen: boolean) => {
@@ -57,7 +68,7 @@ const Autocomplete = forwardRef<AutocompleteRef, AutocompleteProps>(({ options, 
             ...acState,
             searchText,
             results: filterResults(searchText),
-            isMenuOpen,
+            isMenuOpen
         });
     };
     // react events
@@ -77,13 +88,13 @@ const Autocomplete = forwardRef<AutocompleteRef, AutocompleteProps>(({ options, 
         if (acRefInternal.current.contains(event.target as HTMLDivElement)) {
             setState({
                 ...acStateRef.current,
-                isMenuOpen: true,
+                isMenuOpen: true
             });
         } else {
             setState({
                 ...acStateRef.current,
                 isMenuOpen: false,
-                keyboardOption: -1,
+                keyboardOption: -1
             });
         }
     };
@@ -101,10 +112,12 @@ const Autocomplete = forwardRef<AutocompleteRef, AutocompleteProps>(({ options, 
             }
             // scroll to top of selected child
             if (resultsListRef.current) {
-                const selectedItem = resultsListRef.current.children[acStateRef.current.keyboardOption] as HTMLUListElement;
+                const selectedItem = resultsListRef.current.children[
+                    acStateRef.current.keyboardOption
+                ] as HTMLUListElement;
                 resultsListRef.current.scrollTo({
                     behavior: "smooth",
-                    top: selectedItem.offsetTop,
+                    top: selectedItem.offsetTop
                 });
             }
         } else if (event.key === "Enter") {
@@ -131,16 +144,31 @@ const Autocomplete = forwardRef<AutocompleteRef, AutocompleteProps>(({ options, 
             changeState("", false);
         },
         getSearchText: () => acStateRef.current?.searchText,
-        getIsUsingEnterKey: () => isUsingEnterKey.current,
+        getIsUsingEnterKey: () => isUsingEnterKey.current
     }));
 
     return (
-        <div ref={acRefInternal} {...props} className={`${styles["autocomplete"]} ${acState.isMenuOpen ? styles["focus"] : ""}`}>
-            <input ref={inputRef} type="text" value={acState.searchText} onChange={handleInputChange} onKeyDown={handleKeyboard} placeholder="Search..." />
+        <div
+            ref={acRefInternal}
+            {...props}
+            className={`${styles["autocomplete"]} ${acState.isMenuOpen ? styles["focus"] : ""}`}
+        >
+            <input
+                ref={inputRef}
+                type="text"
+                value={acState.searchText}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyboard}
+                placeholder="Search..."
+            />
             {acState.results.length > 0 && (
                 <ul className={styles["autocomplete-results"]} ref={resultsListRef}>
                     {acState.results.map((result, index) => (
-                        <li key={index} onClick={handleOptionClick} className={acState.keyboardOption === index ? styles["selected"] : undefined}>
+                        <li
+                            key={index}
+                            onClick={handleOptionClick}
+                            className={acState.keyboardOption === index ? styles["selected"] : undefined}
+                        >
                             {result}
                         </li>
                     ))}

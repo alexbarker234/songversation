@@ -7,7 +7,7 @@ export default function ItemTiles({ items, isLoading }: { items: SpotifyItem[]; 
     if (isLoading)
         return (
             <div className={styles["items-container"]}>
-                <Loading style={{margin: 'auto'}}/>
+                <Loading style={{ margin: "auto" }} />
             </div>
         );
 
@@ -16,7 +16,11 @@ export default function ItemTiles({ items, isLoading }: { items: SpotifyItem[]; 
             {items.length > 0 ? (
                 items.map((item, index) => {
                     return (
-                        <div key={Math.random()} className={styles["item-box"]} style={{ animationDelay: `${index * 0.05}s` }}>
+                        <div
+                            key={Math.random()}
+                            className={styles["item-box"]}
+                            style={{ animationDelay: `${index * 0.05}s` }}
+                        >
                             {/* a tag works better than Link here */}
                             <a href={`/game/artist/${item.id}`}>
                                 <img src={item.imageURL} alt="artist" />
