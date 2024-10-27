@@ -42,7 +42,7 @@ export default async function Home({ params }: { params: { artistID: string } })
       <div className="my-4 text-center text-3xl">
         Which <span className="font-semibold">{artist.name}</span> song is this?
       </div>
-      <Game trackMap={trackMap}></Game>
+      <Game trackMap={trackMap} type="artist" id={artistID}></Game>
     </>
   );
 }

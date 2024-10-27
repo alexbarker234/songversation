@@ -4,10 +4,19 @@ import Autocomplete, { AutocompleteOption } from "@/components/autocomplete";
 import Button from "@/components/Button";
 import Modal from "@/components/modal";
 import { useGame } from "@/hooks/game";
+import { getScore } from "@/lib/localScoreManager";
+import { cn } from "@/utils/cn";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import Confetti from "react-confetti";
 
-export default function Game({ trackMap }: { trackMap: TrackMap }) {
+interface GameProps {
+  trackMap: TrackMap;
+  type: "playlist" | "artist";
+  id: string;
+}
+
+export default function Game({ trackMap, id, type }: GameProps) {
   const [selected, setSelected] = useState<AutocompleteOption | null>(null);
 
   const {
@@ -20,7 +29,7 @@ export default function Game({ trackMap }: { trackMap: TrackMap }) {
     chooseNewSong,
     setScore,
     finishGame
-  } = useGame(trackMap);
+  } = useGame(trackMap, type, id);
   const router = useRouter();
 
   const autocompleteOptions = Object.keys(trackMap).map((key) => ({
@@ -66,7 +75,7 @@ export default function Game({ trackMap }: { trackMap: TrackMap }) {
     <>
       <div className="flex w-full flex-col items-center text-center">
         <div className="text-xs opacity-50">{Object.keys(trackMap).length} tracks loaded</div>
-        <LyricBox lyricDisplay={lyricDisplay} />
+        <LyricBox lyricDisplay={lyricDisplay} trackId={currentTrackID} />
       </div>
 
       <div className="fixed bottom-0 flex h-48 w-full flex-col items-center justify-center bg-zinc-950">
@@ -87,41 +96,24 @@ export default function Game({ trackMap }: { trackMap: TrackMap }) {
           </Button>
         </div>
       </div>
-
-      <Modal isOpen={isGameFinished}>
-        <div className="max-w-md rounded-lg bg-grey p-8 text-center text-white">
-          <img
-            id="track-image"
-            src={trackMap[currentTrackID]?.imageURL}
-            alt="Album Photo"
-            className="bg-grey-dark mx-auto h-64 w-64"
-          />
-          <h2 id="track-name" className="my-4 text-xl">
-            {trackMap[currentTrackID]?.name}
-          </h2>
-          <p id="streak-score" className="mb-4">
-            Final Streak: {score}
-          </p>
-          <div className="flex justify-evenly gap-6">
-            <Button variant="green" onClick={restart}>
-              Play Again?
-            </Button>
-            <Button variant="bordered" onClick={() => router.push("/")}>
-              Return Home
-            </Button>
-          </div>
-        </div>
-      </Modal>
+      <FinishModal
+        isOpen={isGameFinished}
+        score={score}
+        finalTrack={trackMap[currentTrackID]}
+        restart={restart}
+        type={type}
+        id={id}
+      />
     </>
   );
 }
 
-function LyricBox({ lyricDisplay }: { lyricDisplay: string[] }) {
+function LyricBox({ lyricDisplay, trackId }: { lyricDisplay: string[]; trackId: string }) {
   return (
     <div className="bg-grey-dark mt-4 flex w-full max-w-5xl flex-col justify-evenly overflow-hidden rounded-lg px-4">
       {lyricDisplay.map((lyricLine, index) => (
         <div
-          key={index}
+          key={trackId + index}
           className="animate-fade-in relative flex min-h-12 select-none items-center justify-center py-4 text-2xl opacity-0 transition-opacity duration-1000"
           style={{ animationDelay: `${index * 1}s` }}
         >
@@ -129,5 +121,71 @@ function LyricBox({ lyricDisplay }: { lyricDisplay: string[] }) {
         </div>
       ))}
     </div>
+  );
+}
+
+function FinishModal({
+  isOpen,
+  score,
+  finalTrack,
+  restart,
+  type,
+  id
+}: {
+  isOpen: boolean;
+  score: number;
+  finalTrack: Track | undefined;
+  restart: () => void;
+  type: "playlist" | "artist";
+  id: string;
+}) {
+  const router = useRouter();
+  const [highScore, setHighScore] = useState<number | null>(null);
+
+  useEffect(() => {
+    setHighScore(getScore(type, id));
+
+    // Refresh whenever open is changed
+  }, [isOpen]);
+
+  if (!finalTrack) return null;
+
+  const isHighscore = score === highScore && score != 0;
+
+  return (
+    <Modal isOpen={isOpen}>
+      {isHighscore && isOpen && (
+        <Confetti className="absolute left-0 top-0 h-full w-full" width={472} numberOfPieces={50} />
+      )}
+      <div className="bg-grey-dark mx-auto h-[472px] w-[448px] overflow-hidden rounded-lg p-6 text-center text-white shadow-lg">
+        <img
+          src={finalTrack.imageURL}
+          alt="Album Cover"
+          className="mx-auto mb-4 h-48 w-48 rounded-lg object-cover shadow-md"
+        />
+
+        <h2 className="mb-1 text-2xl font-semibold">{finalTrack.name}</h2>
+
+        <div className="mt-4 flex justify-center gap-4">
+          <div className="rounded-lg bg-grey-light p-4 text-lg shadow-inner">
+            <p className="font-semibold">Final Score</p>
+            <p className={cn("text-2xl font-bold", { "animate-pulse-scale text-primary": isHighscore })}>{score}</p>
+          </div>
+          <div className="rounded-lg bg-grey-light p-4 text-lg shadow-inner">
+            <p className="font-semibold">Best Score</p>
+            <p className={cn("text-2xl font-bold", { "animate-pulse-scale text-primary": isHighscore })}>{highScore}</p>
+          </div>
+        </div>
+
+        <div className="mt-8 flex justify-center gap-6">
+          <Button variant="green" onClick={restart}>
+            Play Again
+          </Button>
+          <Button variant="bordered" onClick={() => router.push("/")}>
+            Return Home
+          </Button>
+        </div>
+      </div>
+    </Modal>
   );
 }

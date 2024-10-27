@@ -90,16 +90,13 @@ export default function Autocomplete({ options, selected, className, setSelected
         value={searchText === "" ? (selected?.label ?? "") : searchText}
         onChange={handleInputChange}
         onKeyDown={handleKeyboard}
-        onBlur={handleBlur}
         placeholder="Search..."
         className="w-full rounded-lg border-none bg-grey-light p-3 text-white placeholder-gray-400 outline-none outline-offset-0 transition-colors duration-150 focus:outline focus:outline-primary"
       />
       {filteredOptions.length > 0 && isMenuOpen && (
         <ul
           ref={resultsListRef}
-          className={`absolute bottom-full left-0 z-10 mb-2 max-h-80 w-full overflow-y-auto rounded-lg bg-grey-light shadow-lg ${
-            isMenuOpen ? "block" : "hidden"
-          }`}
+          className="absolute bottom-full left-0 z-10 mb-2 max-h-80 w-full overflow-y-auto rounded-lg bg-grey-light shadow-lg"
         >
           {filteredOptions.map((option, index) => (
             <li

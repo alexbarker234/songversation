@@ -1,3 +1,4 @@
+import { saveScore } from "@/lib/localScoreManager";
 import { randBetween } from "@/lib/mathExtensions";
 import { useEffect, useState } from "react";
 
@@ -8,7 +9,7 @@ function shuffleArray(array: any[]) {
   }
 }
 
-export function useGame(trackMap: TrackMap) {
+export function useGame(trackMap: TrackMap, type: "playlist" | "artist", id: string) {
   const [currentTrackID, setCurrentTrackID] = useState<string>("");
   const [remainingTrackIDs, setRemainingTrackIDs] = useState<string[]>([]);
   const [lyricDisplay, setLyricDisplay] = useState<string[]>(["", "", ""]);
@@ -22,10 +23,10 @@ export function useGame(trackMap: TrackMap) {
   }, []);
 
   const loadGame = () => {
-    const remaining = [...trackIDs];
-    shuffleArray(remaining);
+    const trackList = [...trackIDs];
+    shuffleArray(trackList);
 
-    const firstID = remaining.pop();
+    const firstID = trackList.pop();
     if (!firstID) {
       console.error("No track ID found.");
       return;
@@ -33,7 +34,7 @@ export function useGame(trackMap: TrackMap) {
 
     setGameFinished(false);
     setCurrentTrackID(firstID);
-    setRemainingTrackIDs(remaining);
+    setRemainingTrackIDs(trackList);
     setLyricDisplay(getLyrics(firstID));
     setScore(0);
   };
@@ -66,7 +67,7 @@ export function useGame(trackMap: TrackMap) {
 
   const finishGame = () => {
     setGameFinished(true);
-    // TODO: save game to DB
+    saveScore(type, id, score);
   };
 
   return {

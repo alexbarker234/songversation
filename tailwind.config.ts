@@ -20,7 +20,8 @@ const config: Config = {
         "fade-in": "fade-in 1s forwards",
         "fade-in-out": "fade-in-out 3s forwards",
         "loader-bounce": "loader-bounce 1s infinite ease-in-out",
-        "fade-drop-in": "fade-drop-in 0.5s forwards"
+        "fade-drop-in": "fade-drop-in 0.5s forwards",
+        "pulse-scale": "pulse-scale 0.5s infinite"
       },
       keyframes: {
         slideIn: {
@@ -47,6 +48,10 @@ const config: Config = {
         "fade-drop-in": {
           from: { opacity: "0", transform: "translateY(-3rem)" },
           to: { opacity: "1", transform: "translateY(0)" }
+        },
+        "pulse-scale": {
+          "0%, 100%": { transform: "scale(1)" },
+          "50%": { transform: "scale(1.15)" }
         }
       }
     }
