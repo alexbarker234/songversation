@@ -28,7 +28,10 @@ export default function SearchPage({ type }: { type: "artist" | "playlist" }) {
     if (!data) return <></>;
     return <ItemTiles items={data} isLoading={isLoading} />;
   };
-  const text = type === "artist" ? "Search for an artist..." : "Search for a public playlist or paste a link...";
+  const text =
+    type === "artist"
+      ? "Search for an artist or paste a link (https://open.spotify.com/artist/xxxxxxx)..."
+      : "Search for a public playlist or paste a link (https://open.spotify.com/playlist/xxxxxxx)...";
   return (
     <>
       <SearchBox runSearch={setQuery} placeholder={text} />
