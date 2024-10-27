@@ -10,15 +10,17 @@ const config: Config = {
     extend: {
       colors: {
         primary: "#1db954",
-        "grey-dark": "#121212",
+        "grey-dark": "#111114",
         grey: "#16171a",
-        "grey-light": "#2c2c30"
+        "grey-light": "#26262b"
       },
       animation: {
         slideIn: "slideIn 1s forwards",
         hop: "hop 0.3s ease-in-out forwards",
         "fade-in": "fade-in 1s forwards",
-        "fade-in-out": "fade-in-out 3s forwards"
+        "fade-in-out": "fade-in-out 3s forwards",
+        "loader-bounce": "loader-bounce 1s infinite ease-in-out",
+        "fade-drop-in": "fade-drop-in 0.5s forwards"
       },
       keyframes: {
         slideIn: {
@@ -36,10 +38,19 @@ const config: Config = {
         "fade-in-out": {
           "0%, 10%": { opacity: "1" },
           "90%, 100%": { opacity: "0" }
+        },
+        "loader-bounce": {
+          "0%": { height: "50%", top: "50%" },
+          "50%": { height: "100%", top: "0%" },
+          "100%": { height: "50%", top: "50%" }
+        },
+        "fade-drop-in": {
+          from: { opacity: "0", transform: "translateY(-3rem)" },
+          to: { opacity: "1", transform: "translateY(0)" }
         }
       }
     }
   },
-  plugins: []
+  plugins: [require("tailwindcss-animation-delay")]
 };
 export default config;

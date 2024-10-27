@@ -2,7 +2,6 @@
 import SearchBox from "@/components/searchBox";
 import { useState } from "react";
 import ItemTiles from "./itemTiles";
-import styles from "./page.module.scss";
 
 export default function GameArtistHome({ params }: any) {
   const [artistList, setArtistList] = useState<Artist[]>([]);
@@ -28,7 +27,7 @@ export default function GameArtistHome({ params }: any) {
     <>
       <SearchBox runSearch={search} placeholder="Search for an artist..." />
       {searchState === "error" ? (
-        <div className={styles["error"]}>!</div>
+        <div className="text-5xl text-red-500">!</div>
       ) : (
         <ItemTiles items={artistList} isLoading={searchState === "searching"}></ItemTiles>
       )}

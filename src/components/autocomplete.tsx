@@ -92,7 +92,7 @@ export default function Autocomplete({ options, selected, className, setSelected
         onKeyDown={handleKeyboard}
         onBlur={handleBlur}
         placeholder="Search..."
-        className="w-full rounded-lg border-none bg-grey-light p-3 text-white placeholder-gray-400 outline-none transition-colors duration-150 focus:outline focus:outline-primary"
+        className="w-full rounded-lg border-none bg-grey-light p-3 text-white placeholder-gray-400 outline-none outline-offset-0 transition-colors duration-150 focus:outline focus:outline-primary"
       />
       {filteredOptions.length > 0 && isMenuOpen && (
         <ul

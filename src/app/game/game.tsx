@@ -66,11 +66,11 @@ export default function Game({ trackMap }: { trackMap: TrackMap }) {
     <>
       <div className="flex w-full flex-col items-center text-center">
         <div className="text-xs opacity-50">{Object.keys(trackMap).length} tracks loaded</div>
-        <div className="mt-4 flex w-full max-w-5xl flex-col justify-evenly overflow-hidden bg-[var(--bg-color2)] px-4">
+        <div className="bg-grey-dark mt-4 flex w-full max-w-5xl flex-col justify-evenly overflow-hidden px-4">
           {lyricDisplay.map((lyricLine, index) => (
             <div
               key={index}
-              className="animate-fade-in relative flex min-h-[3em] select-none items-center justify-center text-2xl opacity-0 transition-opacity duration-1000"
+              className="animate-fade-in relative flex min-h-12 select-none items-center justify-center text-2xl opacity-0 transition-opacity duration-1000"
               style={{ animationDelay: `${index * 1}s` }}
             >
               <p>{lyricLine}</p>
@@ -79,7 +79,7 @@ export default function Game({ trackMap }: { trackMap: TrackMap }) {
         </div>
       </div>
 
-      <div className="fixed bottom-0 flex h-48 w-full flex-col items-center justify-center bg-black">
+      <div className="fixed bottom-0 flex h-48 w-full flex-col items-center justify-center bg-zinc-950">
         <Autocomplete
           options={autocompleteOptions}
           selected={selected}
