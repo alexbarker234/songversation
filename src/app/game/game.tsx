@@ -66,17 +66,7 @@ export default function Game({ trackMap }: { trackMap: TrackMap }) {
     <>
       <div className="flex w-full flex-col items-center text-center">
         <div className="text-xs opacity-50">{Object.keys(trackMap).length} tracks loaded</div>
-        <div className="bg-grey-dark mt-4 flex w-full max-w-5xl flex-col justify-evenly overflow-hidden px-4">
-          {lyricDisplay.map((lyricLine, index) => (
-            <div
-              key={index}
-              className="animate-fade-in relative flex min-h-12 select-none items-center justify-center text-2xl opacity-0 transition-opacity duration-1000"
-              style={{ animationDelay: `${index * 1}s` }}
-            >
-              <p>{lyricLine}</p>
-            </div>
-          ))}
-        </div>
+        <LyricBox lyricDisplay={lyricDisplay} />
       </div>
 
       <div className="fixed bottom-0 flex h-48 w-full flex-col items-center justify-center bg-zinc-950">
@@ -123,5 +113,21 @@ export default function Game({ trackMap }: { trackMap: TrackMap }) {
         </div>
       </Modal>
     </>
+  );
+}
+
+function LyricBox({ lyricDisplay }: { lyricDisplay: string[] }) {
+  return (
+    <div className="bg-grey-dark mt-4 flex w-full max-w-5xl flex-col justify-evenly overflow-hidden rounded-lg px-4">
+      {lyricDisplay.map((lyricLine, index) => (
+        <div
+          key={index}
+          className="animate-fade-in relative flex min-h-12 select-none items-center justify-center py-4 text-2xl opacity-0 transition-opacity duration-1000"
+          style={{ animationDelay: `${index * 1}s` }}
+        >
+          <p>{lyricLine}</p>
+        </div>
+      ))}
+    </div>
   );
 }
