@@ -1,10 +1,8 @@
 import Link from "next/link";
-import Loading from "./loading";
 
 export default function Home() {
   return (
     <div className="relative mx-auto flex w-11/12 max-w-5xl flex-wrap justify-center">
-      <Loading />
       <MenuTile href="/game/artist" title="🎤 Artist Quiz" description="Guess songs from your favourite artists!" />
     </div>
   );
