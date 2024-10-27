@@ -1,14 +1,15 @@
 "use client";
 
+import Autocomplete, { AutocompleteOption } from "@/components/autocomplete";
 import Button from "@/components/Button";
 import Modal from "@/components/modal";
-import Autocomplete, { AutocompleteOption } from "@/components/newAuto";
 import { useGame } from "@/hooks/game";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function Game({ trackMap }: { trackMap: TrackMap }) {
   const [selected, setSelected] = useState<AutocompleteOption | null>(null);
+
   const {
     currentTrackID,
     remainingTrackIDs,
@@ -28,19 +29,18 @@ export default function Game({ trackMap }: { trackMap: TrackMap }) {
   }));
 
   useEffect(() => {
-    document.addEventListener("keydown", handleKeyboard, true);
-    return () => {
-      document.removeEventListener("keydown", handleKeyboard);
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Enter" && selected !== null) {
+        event.preventDefault();
+        submit(selected.id);
+      }
     };
-  }, []);
 
-  const handleKeyboard = (event: KeyboardEvent) => {
-    // TODO
-    // if (event.key === "Enter") {
-    //   const input = acRef.current?.getSearchText();
-    //   if (input && autocompleteOptions.includes(input) && !acRef.current?.getIsUsingEnterKey()) submit(input);
-    // }
-  };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [selected]);
 
   const handleSubmitButton = () => {
     if (selected) submit(selected?.id);
@@ -83,7 +83,7 @@ export default function Game({ trackMap }: { trackMap: TrackMap }) {
         <Autocomplete
           options={autocompleteOptions}
           selected={selected}
-          onSelect={setSelected}
+          setSelected={setSelected}
           className="mx-auto w-11/12 max-w-5xl"
         />
 

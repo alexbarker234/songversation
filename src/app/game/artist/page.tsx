@@ -26,7 +26,7 @@ export default function GameArtistHome({ params }: any) {
 
   return (
     <>
-      <SearchBox runSearch={search} />
+      <SearchBox runSearch={search} placeholder="Search for an artist..." />
       {searchState === "error" ? (
         <div className={styles["error"]}>!</div>
       ) : (
