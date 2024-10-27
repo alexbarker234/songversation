@@ -10,7 +10,7 @@ interface SearchBoxProps {
 }
 
 export default function SearchBox({ className, placeholder, runSearch }: SearchBoxProps) {
-  const [searchText, setSearchText] = useState("");
+  const [search, setSearch] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   const debouncedSearch = useDebouncedCallback((text: string) => {
@@ -21,13 +21,13 @@ export default function SearchBox({ className, placeholder, runSearch }: SearchB
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
-    setSearchText(value);
+    setSearch(value);
     debouncedSearch(value);
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter" && searchText.replaceAll(" ", "").length > 0) {
-      runSearch(searchText);
+    if (event.key === "Enter" && search.replaceAll(" ", "").length > 0) {
+      runSearch(search);
       debouncedSearch.cancel();
     }
   };
@@ -49,7 +49,7 @@ export default function SearchBox({ className, placeholder, runSearch }: SearchB
       <input
         ref={inputRef}
         type="text"
-        value={searchText}
+        value={search}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
         placeholder={placeholder ?? "Search..."}
