@@ -1,13 +1,7 @@
 import { saveScore } from "@/lib/localScoreManager";
 import { randBetween } from "@/lib/mathExtensions";
+import { shuffleArray } from "@/utils/utils";
 import { useEffect, useState } from "react";
-
-function shuffleArray(array: any[]) {
-  for (let i = array.length - 1; i >= 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-}
 
 export function useGame(trackMap: TrackMap, type: "playlist" | "artist", id: string) {
   const [currentTrackID, setCurrentTrackID] = useState<string>("");
@@ -16,14 +10,17 @@ export function useGame(trackMap: TrackMap, type: "playlist" | "artist", id: str
   const [score, setScore] = useState<number>(0);
   const [isGameFinished, setGameFinished] = useState(false);
 
-  const trackIDs = Object.keys(trackMap);
+  const tracksWithLyrics = Object.values(trackMap).filter((track) => track.lyrics?.length);
+  const trackIDsWithLyrics = tracksWithLyrics.map((track) => track.id);
 
   useEffect(() => {
+    if (currentTrackID !== "") return;
+    console.log("Starting game");
     loadGame();
-  }, []);
+  }, [trackMap]);
 
   const loadGame = () => {
-    const trackList = [...trackIDs];
+    const trackList = [...trackIDsWithLyrics];
     shuffleArray(trackList);
 
     const firstID = trackList.pop();
@@ -50,16 +47,13 @@ export function useGame(trackMap: TrackMap, type: "playlist" | "artist", id: str
 
   const chooseNewSong = () => {
     const newRemaining = [...remainingTrackIDs];
+    shuffleArray(newRemaining);
+
     let newID = newRemaining.pop();
     if (!newID) {
-      shuffleArray(newRemaining);
-      newID = newRemaining.pop();
-      if (!newID) {
-        console.error("No track ID found.");
-        return;
-      }
+      console.error("No track ID found.");
+      return;
     }
-
     setCurrentTrackID(newID);
     setRemainingTrackIDs(newRemaining);
     setLyricDisplay(getLyrics(newID));

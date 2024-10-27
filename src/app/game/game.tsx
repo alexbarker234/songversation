@@ -4,11 +4,13 @@ import Autocomplete, { AutocompleteOption } from "@/components/autocomplete";
 import Button from "@/components/Button";
 import Modal from "@/components/modal";
 import { useGame } from "@/hooks/game";
+import { useLyrics } from "@/hooks/lyrics";
 import { getScore } from "@/lib/localScoreManager";
 import { cn } from "@/utils/cn";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Confetti from "react-confetti";
+import Loading from "../loading";
 
 interface GameProps {
   trackMap: TrackMap;
@@ -16,8 +18,9 @@ interface GameProps {
   id: string;
 }
 
-export default function Game({ trackMap, id, type }: GameProps) {
+export default function Game({ trackMap: startTrackMap, id, type }: GameProps) {
   const [selected, setSelected] = useState<AutocompleteOption | null>(null);
+  const { trackMap, isDone } = useLyrics(startTrackMap);
 
   const {
     currentTrackID,
@@ -30,7 +33,6 @@ export default function Game({ trackMap, id, type }: GameProps) {
     setScore,
     finishGame
   } = useGame(trackMap, type, id);
-  const router = useRouter();
 
   const autocompleteOptions = Object.keys(trackMap).map((key) => ({
     label: `${trackMap[key].artist} - ${trackMap[key].name}`,
@@ -70,6 +72,7 @@ export default function Game({ trackMap, id, type }: GameProps) {
     loadGame();
     setSelected(null);
   };
+  if (!isDone) return <Loading />;
 
   return (
     <>
@@ -110,11 +113,11 @@ export default function Game({ trackMap, id, type }: GameProps) {
 
 function LyricBox({ lyricDisplay, trackId }: { lyricDisplay: string[]; trackId: string }) {
   return (
-    <div className="bg-grey-dark mt-4 flex w-full max-w-5xl flex-col justify-evenly overflow-hidden rounded-lg px-4">
+    <div className="mt-4 flex w-full max-w-5xl flex-col justify-evenly overflow-hidden rounded-lg bg-grey-dark px-4">
       {lyricDisplay.map((lyricLine, index) => (
         <div
           key={trackId + index}
-          className="animate-fade-in relative flex min-h-12 select-none items-center justify-center py-4 text-2xl opacity-0 transition-opacity duration-1000"
+          className="relative flex min-h-12 animate-fade-in select-none items-center justify-center py-4 text-2xl opacity-0 transition-opacity duration-1000"
           style={{ animationDelay: `${index * 1}s` }}
         >
           <p>{lyricLine}</p>
@@ -157,7 +160,7 @@ function FinishModal({
       {isHighscore && isOpen && (
         <Confetti className="absolute left-0 top-0 h-full w-full" width={472} numberOfPieces={50} />
       )}
-      <div className="bg-grey-dark mx-auto h-[472px] w-[448px] overflow-hidden rounded-lg p-6 text-center text-white shadow-lg">
+      <div className="mx-auto h-[472px] w-[448px] overflow-hidden rounded-lg bg-grey-dark p-6 text-center text-white shadow-lg">
         <img
           src={finalTrack.imageURL}
           alt="Album Cover"

@@ -1,5 +1,5 @@
 import { getPlaylist } from "@/lib/spotify";
-import { getTrackData } from "@/utils/trackDataUtils";
+import { getStartTrackData } from "@/utils/trackDataUtils";
 import { redirect } from "next/navigation";
 import Game from "../../game";
 
@@ -9,8 +9,10 @@ export default async function PlaylistGame({ params }: { params: { playlistID: s
   const item = await getPlaylist(playlistID);
   if (!item) redirect("/game/playlist");
 
-  const trackMap = await getTrackData(playlistID, "playlist");
-  if (!trackMap) return <div>An error occurred</div>;
+  const data = await getStartTrackData(playlistID, "playlist");
+  if (!data) return <div>An error occurred</div>;
+
+  const { trackMap, remainingTrackIds } = data;
 
   return (
     <>

@@ -22,14 +22,10 @@ export async function getLyrics(artist: string, title: string) {
   }
 }
 
-interface TrackInfo {
-  id: string;
-  artist: string;
-  title: string;
-}
-
 export const getMultipleLyrics = async (tracks: TrackInfo[]) => {
   const lyricMap: { [key: string]: string[] } = {};
+
+  const start = Date.now();
 
   const requests = tracks.map(({ artist, title }) => {
     const url = `https://api.lyrics.ovh/v1/${encodeURIComponent(artist)}/${encodeURIComponent(title)}`;
@@ -46,6 +42,7 @@ export const getMultipleLyrics = async (tracks: TrackInfo[]) => {
   });
 
   const responses = await Promise.all(requests);
+  console.log(`Fetched ${tracks.length} lyrics in ${Date.now() - start} ms`);
 
   responses.forEach((response, index) => {
     const { artist, title, id } = tracks[index];

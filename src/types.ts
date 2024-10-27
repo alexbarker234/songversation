@@ -5,6 +5,7 @@ interface Track {
   name: string;
   imageURL: string;
   lyrics?: string[];
+  hasFetchedLyrics?: boolean;
 }
 interface TrackMap {
   [key: string]: Track;
@@ -36,4 +37,10 @@ interface LyricMap {
 // USER
 interface UserData {
   name: string;
+}
+
+interface TrackInfo {
+  id: string;
+  artist: string;
+  title: string;
 }

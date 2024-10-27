@@ -53,7 +53,6 @@ export const getPlaylist = async (playlistID: string) => {
   if (!response.ok) return;
 
   const data: SpotifyPlaylistItem = await response.json();
-  console.log(data);
 
   const playlist: SpotifyItem = { id: data.id, imageURL: data.images[0]?.url, name: data.name };
 
@@ -62,6 +61,8 @@ export const getPlaylist = async (playlistID: string) => {
 
 export const getPlaylistTracks = async (playlistID: string) => {
   const limit = 100;
+  const start = Date.now();
+
   const initialResponse = await fetchSpotify(`/playlists/${playlistID}/tracks?limit=${limit}`);
 
   if (!initialResponse.ok) return;
@@ -93,6 +94,8 @@ export const getPlaylistTracks = async (playlistID: string) => {
   const results = await Promise.all(requests);
   results.forEach((tracks) => allTracks.push(...tracks));
 
+  console.log(`Fetched ${allTracks.length} tracks from playlist ${playlistID} in ${Date.now() - start} ms`);
+
   return allTracks;
 };
 
@@ -109,7 +112,6 @@ export const getArtist = async (id: string) => {
   if (!response.ok) return;
 
   const data: SpotifyArtistItem = await response.json();
-  console.log(data);
 
   const artist: Artist = { id: data.id, imageURL: data.images[0]?.url, name: data.name };
 
@@ -193,8 +195,6 @@ const fetchTracksFromAlbumList = async (access_token: string, albums: Album[]) =
 
   // remove duplicates
   const uniqueNames = new Set<string>();
-  console.log(tracks.length);
-
   tracks = tracks.filter((track) => {
     if (uniqueNames.has(track.name)) {
       return false;
@@ -203,7 +203,6 @@ const fetchTracksFromAlbumList = async (access_token: string, albums: Album[]) =
       return true;
     }
   });
-  console.log(tracks.length);
   return tracks;
 };
 
@@ -222,10 +221,7 @@ export const searchSpotify = async (
 
   const items = type === "artist" ? response.artists?.items : response.playlists?.items;
 
-  if (!items) {
-    console.log(response);
-    return;
-  }
+  if (!items) return;
 
   return items.map((item) => ({
     name: item.name,
