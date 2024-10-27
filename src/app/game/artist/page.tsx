@@ -27,7 +27,7 @@ export default function GameArtistHome({ params }: any) {
     <>
       <SearchBox runSearch={search} placeholder="Search for an artist..." />
       {searchState === "error" ? (
-        <div className="text-5xl text-red-500">!</div>
+        <div className="text-center text-6xl text-red-500">!</div>
       ) : (
         <ItemTiles items={artistList} isLoading={searchState === "searching"}></ItemTiles>
       )}

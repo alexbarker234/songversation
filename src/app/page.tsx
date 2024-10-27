@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="relative mx-auto flex w-11/12 max-w-5xl flex-wrap justify-center">
+    <div className="relative mx-auto mt-4 flex w-11/12 max-w-5xl flex-wrap justify-center">
       <MenuTile href="/game/artist" title="🎤 Artist Quiz" description="Guess songs from your favourite artists!" />
     </div>
   );
