@@ -11,7 +11,7 @@ function DebugTrackList({
   trackMap: TrackMap;
   currentTrackIndex: number;
 }) {
-  const [isMinimized, setIsMinimized] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(true);
 
   // Only render in development mode
   if (process.env.NODE_ENV !== "development") return null;

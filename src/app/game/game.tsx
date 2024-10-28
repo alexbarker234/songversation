@@ -161,7 +161,7 @@ function FinishModal({
       {isHighscore && isOpen && (
         <Confetti className="absolute left-0 top-0 h-full w-full" width={472} numberOfPieces={50} />
       )}
-      <div className="mx-auto w-[448px] overflow-hidden rounded-lg bg-grey-dark p-6 text-center text-white shadow-lg">
+      <div className="mx-auto w-11/12 max-w-[448px] overflow-hidden rounded-lg bg-grey-dark p-6 text-center text-white shadow-lg">
         <img
           src={finalTrack.imageURL}
           alt="Album Cover"
