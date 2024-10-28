@@ -18,7 +18,7 @@ function DebugTrackList({
 
   return (
     <div
-      className={`fixed right-0 top-0 h-svh w-64 transform bg-gray-800 p-4 text-white transition-transform duration-300 ease-in-out ${
+      className={`fixed right-0 top-0 flex h-svh w-64 transform flex-col bg-gray-800 p-4 text-white transition-transform duration-300 ease-in-out ${
         isMinimized ? "translate-x-full" : "translate-x-0"
       }`}
     >
@@ -30,7 +30,7 @@ function DebugTrackList({
       </button>
 
       <h2 className="mb-4 text-lg font-semibold">Track Debug List</h2>
-      <div className="mb-8 flex h-[90%] flex-col gap-2 overflow-y-auto">
+      <div className="mb-8 flex flex-col gap-2 overflow-y-auto">
         {trackOrder.map((trackID, index) => {
           const track = trackMap[trackID];
           let borderColor;

@@ -1,27 +1,27 @@
 import { saveScore } from "@/lib/localScoreManager";
-import { randBetween } from "@/lib/mathExtensions";
+import { randBetween } from "@/utils/mathUtils";
 import { shuffleArray } from "@/utils/utils";
 import { useEffect, useState } from "react";
 
-export function useGame(trackMap: TrackMap, type: "playlist" | "artist", id: string) {
+export function useGame(
+  trackMap: TrackMap,
+  type: "playlist" | "artist",
+  id: string,
+  fetchLyrics: (trackIds: string[], callback?: () => void) => void
+) {
   const [lyricDisplay, setLyricDisplay] = useState<string[]>(["", "", ""]);
   const [score, setScore] = useState<number>(0);
-  const [hasLoadedGame, setHasLoadedGame] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
   const [isGameFinished, setGameFinished] = useState(false);
 
   // NEW
   const [trackOrder, setTrackOrder] = useState<string[]>([]);
   const [currentTrackIndex, setCurrentTrackIndex] = useState<number>(0);
 
-  const tracksWithLyrics = Object.values(trackMap).filter((track) => track.lyrics?.length);
-  const trackIDsWithLyrics = tracksWithLyrics.map((track) => track.id);
-
   useEffect(() => {
-    if (hasLoadedGame) return;
     console.log("Starting game");
     loadGame(true);
-    setHasLoadedGame(true);
-  }, [trackMap]);
+  }, []);
 
   const loadGame = (isFirstGame?: boolean) => {
     let shuffledTrackIds: string[] = [];
@@ -43,21 +43,60 @@ export function useGame(trackMap: TrackMap, type: "playlist" | "artist", id: str
 
       shuffledTrackIds = [...withLyrics, ...withoutLyrics];
       setTrackOrder(shuffledTrackIds);
+      setLyricDisplay(chooseLyrics(shuffledTrackIds[0]));
+      setIsLoaded(true);
     } else {
-      shuffledTrackIds = [...trackIDsWithLyrics];
+      // Tracks with lyrics or tracks that haven't had lyrics fetched
+      const availableTrackIds = Object.values(trackMap)
+        .filter((track) => track.lyrics || !track.hasFetchedLyrics)
+        .map((track) => track.id);
+
+      shuffledTrackIds = [...availableTrackIds];
       shuffleArray(shuffledTrackIds);
+
+      // Fetch the first 10 that don't already have lyrics
+      const tracksWithoutLyrics = shuffledTrackIds.filter((id) => !trackMap[id].lyrics).slice(0, 10);
+      const needsToFetch = tracksWithoutLyrics.length != 0;
+
+      if (!needsToFetch) {
+        setIsLoaded(true);
+        setLyricDisplay(chooseLyrics(shuffledTrackIds[0]));
+      } else {
+        setIsLoaded(false);
+        fetchLyrics(tracksWithoutLyrics);
+      }
+
       setTrackOrder(shuffledTrackIds);
     }
 
     setGameFinished(false);
-    setLyricDisplay(getLyrics(shuffledTrackIds[currentTrackIndex]));
     setScore(0);
+    setCurrentTrackIndex(0);
   };
 
-  const getLyrics = (trackID: string) => {
+  // For restarting games, when the lyrics need to be fetched
+  useEffect(() => {
+    if (!isLoaded && trackOrder.length != 0) {
+      // Find track that has lyrics
+      let newIndex = 0;
+      while (!trackMap[trackOrder[newIndex]].lyrics) {
+        newIndex++;
+      }
+
+      setCurrentTrackIndex(newIndex);
+      setLyricDisplay(chooseLyrics(trackOrder[newIndex]));
+      setIsLoaded(true);
+    }
+  }, [trackMap]);
+
+  const chooseLyrics = (trackID: string) => {
     const track = trackMap[trackID];
-    if (!track || !track.lyrics) {
-      console.error("No track, or track doesn't have lyrics");
+    if (!track) {
+      console.error("No track");
+      return [];
+    }
+    if (!track.lyrics) {
+      console.error("Track doesn't have lyrics", track);
       return [];
     }
 
@@ -82,7 +121,26 @@ export function useGame(trackMap: TrackMap, type: "playlist" | "artist", id: str
       return;
     }
 
-    setCurrentTrackIndex(currentTrackIndex + 1);
+    let newIndex = currentTrackIndex + 1;
+    while (!trackMap[trackOrder[newIndex]].lyrics) {
+      newIndex++;
+    }
+
+    setCurrentTrackIndex(newIndex);
+    setLyricDisplay(chooseLyrics(trackOrder[newIndex]));
+
+    // Fetch the next 5 lyrics if there are only 2 more ahead with lyrics
+    const fetchCount = 8;
+    const remainingTracksWithLyrics = trackOrder
+      .slice(currentTrackIndex + 1, currentTrackIndex + 1 + fetchCount)
+      .filter((id) => trackMap[id].lyrics);
+
+    if (remainingTracksWithLyrics.length < 3) {
+      const nextTracksToFetch = trackOrder
+        .slice(currentTrackIndex + 1, currentTrackIndex + 1 + fetchCount)
+        .filter((id) => !trackMap[id].hasFetchedLyrics);
+      fetchLyrics(nextTracksToFetch);
+    }
   };
 
   const finishGame = () => {
@@ -95,10 +153,9 @@ export function useGame(trackMap: TrackMap, type: "playlist" | "artist", id: str
     lyricDisplay,
     score,
     isGameFinished,
-
+    isLoaded,
     trackOrder,
     currentTrackIndex,
-
     loadGame,
     submit,
     finishGame

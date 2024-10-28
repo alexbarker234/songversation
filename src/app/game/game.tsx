@@ -21,22 +21,21 @@ interface GameProps {
 
 export default function Game({ trackMap: startTrackMap, id, type }: GameProps) {
   const [selected, setSelected] = useState<AutocompleteOption | null>(null);
-  const { trackMap, isDone } = useLyrics(startTrackMap);
+  const { trackMap, fetchLyrics } = useLyrics(startTrackMap);
 
   const {
     currentTrackID,
     lyricDisplay,
     score,
     isGameFinished,
-
+    isLoaded,
     trackOrder,
     currentTrackIndex,
-
     loadGame,
     submit,
     finishGame
-  } = useGame(trackMap, type, id);
-
+  } = useGame(trackMap, type, id, fetchLyrics);
+  console.log(trackMap[currentTrackID]);
   const autocompleteOptions = Object.keys(trackMap).map((key) => ({
     label: `${trackMap[key].artist} - ${trackMap[key].name}`,
     id: key
@@ -69,7 +68,8 @@ export default function Game({ trackMap: startTrackMap, id, type }: GameProps) {
     loadGame();
     setSelected(null);
   };
-  if (!isDone) return <Loading />;
+
+  if (!isLoaded) return <Loading />;
 
   return (
     <>
@@ -152,13 +152,12 @@ function FinishModal({
   if (!finalTrack) return null;
 
   const isHighscore = score === highScore && score != 0;
-
   return (
     <Modal isOpen={isOpen}>
       {isHighscore && isOpen && (
         <Confetti className="absolute left-0 top-0 h-full w-full" width={472} numberOfPieces={50} />
       )}
-      <div className="mx-auto h-[472px] w-[448px] overflow-hidden rounded-lg bg-grey-dark p-6 text-center text-white shadow-lg">
+      <div className="mx-auto w-[448px] overflow-hidden rounded-lg bg-grey-dark p-6 text-center text-white shadow-lg">
         <img
           src={finalTrack.imageURL}
           alt="Album Cover"
