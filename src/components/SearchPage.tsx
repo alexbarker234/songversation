@@ -11,14 +11,17 @@ export default function SearchPage({ type }: { type: "artist" | "playlist" }) {
 
   useEffect(() => {
     function extractSpotifyId(url: string) {
-      const match = url.match(new RegExp(`${type}\\/([a-zA-Z0-9]+)`));
-      return match ? match[1] : null;
+      const match = url.match(/(artist|playlist)\/([a-zA-Z0-9]+)/);
+      return match ? { type: match[1], id: match[2] } : null;
     }
 
     if (query.startsWith("https://open.spotify.com/")) {
-      const extractedId = extractSpotifyId(query);
+      const extractedData = extractSpotifyId(query);
       setIsURL(true);
-      if (extractedId) window.location.assign(`/game/${type}/${extractedId}`);
+      if (extractedData) {
+        const { type, id } = extractedData;
+        window.location.assign(`/game/${type}/${id}`);
+      }
     }
   }, [query]);
 
