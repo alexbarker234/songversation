@@ -9,10 +9,8 @@ export default async function PlaylistGame({ params }: { params: { playlistID: s
   const item = await getPlaylist(playlistID);
   if (!item) redirect("/game/playlist");
 
-  const data = await getStartTrackData(playlistID, "playlist");
-  if (!data) return <div>An error occurred</div>;
-
-  const { trackMap, remainingTrackIds } = data;
+  const trackMap = await getStartTrackData(playlistID, "playlist");
+  if (!trackMap) return <div>An error occurred</div>;
 
   return (
     <>

@@ -17,7 +17,7 @@ export default async function ArtistGame({ params }: { params: { artistID: strin
       <div className="my-4 text-center text-3xl">
         Which <span className="font-semibold">{item.name}</span> song is this?
       </div>
-      <Game trackMap={trackMap.trackMap} type="artist" id={artistID} />
+      <Game trackMap={trackMap} type="artist" id={artistID} />
     </>
   );
 }

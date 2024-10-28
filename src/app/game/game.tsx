@@ -2,6 +2,8 @@
 
 import Autocomplete, { AutocompleteOption } from "@/components/autocomplete";
 import Button from "@/components/Button";
+import DebugTrackList from "@/components/DebugTrackList";
+import FieldInfoHover from "@/components/InfoHover";
 import Modal from "@/components/modal";
 import { useGame } from "@/hooks/game";
 import { useLyrics } from "@/hooks/lyrics";
@@ -20,19 +22,20 @@ interface GameProps {
 
 export default function Game({ trackMap: startTrackMap, id, type }: GameProps) {
   const [selected, setSelected] = useState<AutocompleteOption | null>(null);
-  const { trackMap, isDone } = useLyrics(startTrackMap);
+  const { trackMap, fetchLyrics } = useLyrics(startTrackMap);
 
   const {
     currentTrackID,
-    remainingTrackIDs,
     lyricDisplay,
     score,
     isGameFinished,
+    isLoaded,
+    trackOrder,
+    currentTrackIndex,
     loadGame,
-    chooseNewSong,
-    setScore,
+    submit,
     finishGame
-  } = useGame(trackMap, type, id);
+  } = useGame(trackMap, type, id, fetchLyrics);
 
   const autocompleteOptions = Object.keys(trackMap).map((key) => ({
     label: `${trackMap[key].artist} - ${trackMap[key].name}`,
@@ -43,7 +46,7 @@ export default function Game({ trackMap: startTrackMap, id, type }: GameProps) {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Enter" && selected !== null) {
         event.preventDefault();
-        submit(selected.id);
+        handleSubmit(selected.id);
       }
     };
 
@@ -54,17 +57,11 @@ export default function Game({ trackMap: startTrackMap, id, type }: GameProps) {
   }, [selected]);
 
   const handleSubmitButton = () => {
-    if (selected) submit(selected?.id);
+    if (selected) handleSubmit(selected?.id);
   };
 
-  const submit = (trackId: string) => {
-    const currentTrack = trackMap[currentTrackID];
-    if (currentTrack.id === trackId) {
-      setScore(score + 1);
-      chooseNewSong();
-    } else {
-      finishGame();
-    }
+  const handleSubmit = (trackId: string) => {
+    submit(trackId);
     setSelected(null);
   };
 
@@ -72,16 +69,20 @@ export default function Game({ trackMap: startTrackMap, id, type }: GameProps) {
     loadGame();
     setSelected(null);
   };
-  if (!isDone) return <Loading />;
+
+  if (!isLoaded) return <Loading />;
 
   return (
     <>
       <div className="flex w-full flex-col items-center text-center">
-        <div className="text-xs opacity-50">{Object.keys(trackMap).length} tracks loaded</div>
+        <div className="flex items-center text-xs text-gray-500">
+          <span>{Object.keys(trackMap).length} tracks loaded</span>
+          <FieldInfoHover content="Some tracks may not have lyrics, so will not be included in the game" />
+        </div>
         <LyricBox lyricDisplay={lyricDisplay} trackId={currentTrackID} />
       </div>
 
-      <div className="fixed bottom-0 flex h-48 w-full flex-col items-center justify-center bg-zinc-950">
+      <div className="fixed bottom-0 flex h-56 w-full flex-col items-center justify-center bg-zinc-950">
         <Autocomplete
           options={autocompleteOptions}
           selected={selected}
@@ -107,6 +108,7 @@ export default function Game({ trackMap: startTrackMap, id, type }: GameProps) {
         type={type}
         id={id}
       />
+      <DebugTrackList trackMap={trackMap} trackOrder={trackOrder} currentTrackIndex={currentTrackIndex} />
     </>
   );
 }
@@ -154,13 +156,12 @@ function FinishModal({
   if (!finalTrack) return null;
 
   const isHighscore = score === highScore && score != 0;
-
   return (
     <Modal isOpen={isOpen}>
       {isHighscore && isOpen && (
         <Confetti className="absolute left-0 top-0 h-full w-full" width={472} numberOfPieces={50} />
       )}
-      <div className="mx-auto h-[472px] w-[448px] overflow-hidden rounded-lg bg-grey-dark p-6 text-center text-white shadow-lg">
+      <div className="mx-auto w-[448px] overflow-hidden rounded-lg bg-grey-dark p-6 text-center text-white shadow-lg">
         <img
           src={finalTrack.imageURL}
           alt="Album Cover"
