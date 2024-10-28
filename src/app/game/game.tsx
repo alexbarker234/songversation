@@ -3,6 +3,7 @@
 import Autocomplete, { AutocompleteOption } from "@/components/autocomplete";
 import Button from "@/components/Button";
 import DebugTrackList from "@/components/DebugTrackList";
+import FieldInfoHover from "@/components/InfoHover";
 import Modal from "@/components/modal";
 import { useGame } from "@/hooks/game";
 import { useLyrics } from "@/hooks/lyrics";
@@ -35,7 +36,7 @@ export default function Game({ trackMap: startTrackMap, id, type }: GameProps) {
     submit,
     finishGame
   } = useGame(trackMap, type, id, fetchLyrics);
-  console.log(trackMap[currentTrackID]);
+
   const autocompleteOptions = Object.keys(trackMap).map((key) => ({
     label: `${trackMap[key].artist} - ${trackMap[key].name}`,
     id: key
@@ -74,11 +75,14 @@ export default function Game({ trackMap: startTrackMap, id, type }: GameProps) {
   return (
     <>
       <div className="flex w-full flex-col items-center text-center">
-        <div className="text-xs opacity-50">{Object.keys(trackMap).length} tracks loaded</div>
+        <div className="flex items-center text-xs text-gray-500">
+          <span>{Object.keys(trackMap).length} tracks loaded</span>
+          <FieldInfoHover content="Some tracks may not have lyrics, so will not be included in the game" />
+        </div>
         <LyricBox lyricDisplay={lyricDisplay} trackId={currentTrackID} />
       </div>
 
-      <div className="fixed bottom-0 flex h-48 w-full flex-col items-center justify-center bg-zinc-950">
+      <div className="fixed bottom-0 flex h-56 w-full flex-col items-center justify-center bg-zinc-950">
         <Autocomplete
           options={autocompleteOptions}
           selected={selected}
