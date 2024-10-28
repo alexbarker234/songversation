@@ -2,6 +2,7 @@
 
 import Autocomplete, { AutocompleteOption } from "@/components/autocomplete";
 import Button from "@/components/Button";
+import DebugTrackList from "@/components/DebugTrackList";
 import Modal from "@/components/modal";
 import { useGame } from "@/hooks/game";
 import { useLyrics } from "@/hooks/lyrics";
@@ -24,13 +25,15 @@ export default function Game({ trackMap: startTrackMap, id, type }: GameProps) {
 
   const {
     currentTrackID,
-    remainingTrackIDs,
     lyricDisplay,
     score,
     isGameFinished,
+
+    trackOrder,
+    currentTrackIndex,
+
     loadGame,
-    chooseNewSong,
-    setScore,
+    submit,
     finishGame
   } = useGame(trackMap, type, id);
 
@@ -43,7 +46,7 @@ export default function Game({ trackMap: startTrackMap, id, type }: GameProps) {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Enter" && selected !== null) {
         event.preventDefault();
-        submit(selected.id);
+        handleSubmit(selected.id);
       }
     };
 
@@ -54,17 +57,11 @@ export default function Game({ trackMap: startTrackMap, id, type }: GameProps) {
   }, [selected]);
 
   const handleSubmitButton = () => {
-    if (selected) submit(selected?.id);
+    if (selected) handleSubmit(selected?.id);
   };
 
-  const submit = (trackId: string) => {
-    const currentTrack = trackMap[currentTrackID];
-    if (currentTrack.id === trackId) {
-      setScore(score + 1);
-      chooseNewSong();
-    } else {
-      finishGame();
-    }
+  const handleSubmit = (trackId: string) => {
+    submit(trackId);
     setSelected(null);
   };
 
@@ -107,6 +104,7 @@ export default function Game({ trackMap: startTrackMap, id, type }: GameProps) {
         type={type}
         id={id}
       />
+      <DebugTrackList trackMap={trackMap} trackOrder={trackOrder} currentTrackIndex={currentTrackIndex} />
     </>
   );
 }

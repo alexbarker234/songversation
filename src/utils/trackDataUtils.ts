@@ -19,22 +19,26 @@ export async function getStartTrackData(id: string, type: "artist" | "playlist")
     id: track.id
   }));
 
-  // Limit to 50 on server
+  let fetchedWithLyrics = 0;
+  const maxBatchSize = 10;
   shuffleArray(trackDataList);
-  const remainingTrackIds = trackDataList.slice(50).map((track) => track.id);
-  trackDataList = trackDataList.slice(0, 50);
 
-  // Fetch lyrics and add to the track map
-  const lyricMap: LyricMap = await getMultipleLyrics(trackDataList);
-  Object.entries(lyricMap).forEach(([trackID, lyrics]) => {
-    trackMap[trackID].lyrics = lyrics.length > 0 ? lyrics : undefined;
-    trackMap[trackID].hasFetchedLyrics = true;
-  });
+  // Process until at least 5 tracks have lyrics
+  while (fetchedWithLyrics < 5 && trackDataList.length > 0) {
+    // Slice the next batch of 10 tracks to fetch lyrics
+    const currentBatch = trackDataList.slice(0, maxBatchSize);
+    trackDataList = trackDataList.slice(maxBatchSize);
 
-  // Filter to include only tracks with available lyrics
-  // trackMap = Object.fromEntries(
-  //   Object.entries(trackMap).filter(([_, value]) => value.lyrics && value.lyrics.length > 0)
-  // );
+    // Fetch lyrics for the current batch
+    const lyricMap: LyricMap = await getMultipleLyrics(currentBatch);
 
-  return { trackMap, remainingTrackIds };
+    // Update track map and count tracks with lyrics
+    Object.entries(lyricMap).forEach(([trackID, lyrics]) => {
+      trackMap[trackID].lyrics = lyrics.length > 0 ? lyrics : undefined;
+      trackMap[trackID].hasFetchedLyrics = true;
+      if (lyrics.length > 0) fetchedWithLyrics++;
+    });
+  }
+
+  return trackMap;
 }
