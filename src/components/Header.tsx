@@ -10,7 +10,7 @@ export default function Nav() {
         {text.split("").map((char, index) => (
           <span
             key={index}
-            className="group-hover:animate-hop inline-block"
+            className="inline-block group-hover:animate-hop"
             style={{ animationDelay: `${index * 0.05}s` }}
           >
             {char}
