@@ -25,11 +25,27 @@ interface Artist {
 
 // MISC
 
+interface DetailedSpotifyItem {
+  id: string;
+  name: string;
+  imageURL: string;
+  tracks: Track[];
+}
+
 interface SpotifyItem {
   id: string;
   name: string;
   imageURL: string;
 }
+
+interface GameItem {
+  id: string;
+  name: string;
+  imageURL: string;
+  type: "playlist" | "artist";
+  trackIds: string[];
+}
+
 // LYRIC
 interface LyricMap {
   [key: string]: string[];

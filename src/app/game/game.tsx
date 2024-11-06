@@ -5,8 +5,7 @@ import Button from "@/components/Button";
 import DebugTrackList from "@/components/DebugTrackList";
 import FieldInfoHover from "@/components/InfoHover";
 import Modal from "@/components/modal";
-import { useGame } from "@/hooks/game";
-import { useLyrics } from "@/hooks/lyrics";
+import { useGame, useGameData } from "@/hooks/game";
 import { getScore } from "@/lib/localScoreManager";
 import { cn } from "@/utils/cn";
 import { useRouter } from "next/navigation";
@@ -15,14 +14,13 @@ import Confetti from "react-confetti";
 import Loading from "../loading";
 
 interface GameProps {
-  trackMap: TrackMap;
   type: "playlist" | "artist";
   id: string;
 }
 
-export default function Game({ trackMap: startTrackMap, id, type }: GameProps) {
+export default function Game({ type, id }: GameProps) {
   const [selected, setSelected] = useState<AutocompleteOption | null>(null);
-  const { trackMap, fetchLyrics } = useLyrics(startTrackMap);
+  const { gameItem, isLoading, trackMap, fetchLyrics } = useGameData(type, id);
 
   const {
     currentTrackID,
@@ -32,10 +30,11 @@ export default function Game({ trackMap: startTrackMap, id, type }: GameProps) {
     isLoaded,
     trackOrder,
     currentTrackIndex,
+    isPlayable,
     loadGame,
     submit,
     finishGame
-  } = useGame(trackMap, type, id, fetchLyrics);
+  } = useGame(trackMap, type, id, !isLoading, fetchLyrics);
 
   const autocompleteOptions = Object.keys(trackMap).map((key) => ({
     label: `${trackMap[key].artist} - ${trackMap[key].name}`,
@@ -70,10 +69,18 @@ export default function Game({ trackMap: startTrackMap, id, type }: GameProps) {
     setSelected(null);
   };
 
-  if (!isLoaded) return <Loading />;
+  if (!isLoaded || !gameItem) return <Loading />;
+
+  if (!isPlayable)
+    return (
+      <div className="text-center text-xl">Sorry, we could not load enough tracks with lyrics to play offline</div>
+    );
 
   return (
     <>
+      <div className="my-4 text-center text-3xl">
+        Which <span className="font-semibold">{gameItem.name}</span> song is this?
+      </div>
       <div className="flex w-full flex-col items-center text-center">
         <div className="flex items-center text-xs text-gray-500">
           <span>{Object.keys(trackMap).length} tracks loaded</span>

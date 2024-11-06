@@ -12,3 +12,7 @@ export function shuffleArray(array: any[]) {
     [array[i], array[j]] = [array[j], array[i]];
   }
 }
+
+export function capitaliseFirstLetter(val: string) {
+  return String(val).charAt(0).toUpperCase() + String(val).slice(1);
+}
