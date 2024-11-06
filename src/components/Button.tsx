@@ -8,7 +8,8 @@ const buttonVariants = cva(
         default: "",
         bordered: "border-2 border-grey-light",
         green: "bg-primary ",
-        grey: "bg-grey "
+        grey: "bg-grey ",
+        "grey-light": "bg-grey-light"
       }
     },
     defaultVariants: {

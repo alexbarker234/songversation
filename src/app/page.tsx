@@ -1,4 +1,5 @@
 "use client";
+import OfflineGames from "@/components/OfflineGames";
 import useOnline from "@/hooks/useOnline";
 import { cn } from "@/utils/cn";
 import Link from "next/link";
@@ -7,19 +8,22 @@ export default function Home() {
   const isOnline = useOnline();
 
   return (
-    <div className="relative mx-auto mt-4 flex w-11/12 max-w-5xl flex-wrap justify-center">
-      <MenuTile
-        href="/game/artist"
-        title="🎤 Artist Quiz"
-        description="Guess songs from your favourite artists!"
-        disabled={!isOnline}
-      />
-      <MenuTile
-        href="/game/playlist"
-        title="▶️ Playlist Quiz"
-        description="Guess songs from a public playlist!"
-        disabled={!isOnline}
-      />
+    <div>
+      <div className="relative mx-auto mt-4 flex w-11/12 max-w-5xl flex-wrap justify-center">
+        <MenuTile
+          href="/game/artist"
+          title="🎤 Artist Quiz"
+          description="Guess songs from your favourite artists!"
+          disabled={!isOnline}
+        />
+        <MenuTile
+          href="/game/playlist"
+          title="▶️ Playlist Quiz"
+          description="Guess songs from a public playlist!"
+          disabled={!isOnline}
+        />
+      </div>
+      <OfflineGames />
     </div>
   );
 }
