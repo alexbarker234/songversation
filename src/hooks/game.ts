@@ -65,6 +65,7 @@ export function useGameData(type: "playlist" | "artist", id: string) {
       console.warn("Cannot fetch lyrics when offline");
       return;
     }
+    console.log(`Fetching lyrics for ${trackIDs.length} tracks`);
 
     const trackDataList = trackIDs.map((id) => ({
       artist: trackMap[id].artist,
@@ -188,6 +189,8 @@ export function useGame(
         newIndex++;
       }
 
+      console.log("New game's lyrics loaded");
+
       setCurrentTrackIndex(newIndex);
       setLyricDisplay(chooseLyrics(trackOrder[newIndex]));
       setIsLoaded(true);
@@ -240,6 +243,7 @@ export function useGame(
       .slice(currentTrackIndex + 1, currentTrackIndex + 1 + fetchCount)
       .filter((id) => trackMap[id].lyrics);
 
+    // TODO figure out offline situation here
     if (remainingTracksWithLyrics.length < 3 && navigator.onLine) {
       const nextTracksToFetch = trackOrder
         .slice(currentTrackIndex + 1, currentTrackIndex + 1 + fetchCount)
