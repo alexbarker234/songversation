@@ -22,6 +22,11 @@ export default function Game({ type, id }: GameProps) {
   const [selected, setSelected] = useState<AutocompleteOption | null>(null);
   const { gameItem, isLoading, trackMap, fetchLyrics } = useGameData(type, id);
 
+  useEffect(() => {
+    if (navigator.onLine) return;
+    console.log("You are offline");
+  }, []);
+
   const {
     currentTrackID,
     lyricDisplay,
