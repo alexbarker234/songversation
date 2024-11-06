@@ -30,6 +30,7 @@ export default function Game({ type, id }: GameProps) {
     isLoaded,
     trackOrder,
     currentTrackIndex,
+    isPlayable,
     loadGame,
     submit,
     finishGame
@@ -69,6 +70,11 @@ export default function Game({ type, id }: GameProps) {
   };
 
   if (!isLoaded || !gameItem) return <Loading />;
+
+  if (!isPlayable)
+    return (
+      <div className="text-center text-xl">Sorry, we could not load enough tracks with lyrics to play offline</div>
+    );
 
   return (
     <>

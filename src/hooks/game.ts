@@ -47,6 +47,10 @@ export function useGameData(type: "playlist" | "artist", id: string) {
     if (!cachedItem) throw new Error("No cached game item found");
 
     const cachedTracks = await db.tracks.where("id").anyOf(cachedItem.trackIds).toArray();
+
+    const cachedTracksWithLyrics = cachedTracks.filter((track) => track.lyrics !== undefined);
+    console.log(`${cachedTracksWithLyrics.length} cached tracks have lyrics`);
+
     setTrackMap(createTrackMap(cachedTracks));
 
     return cachedItem;
@@ -56,7 +60,12 @@ export function useGameData(type: "playlist" | "artist", id: string) {
   const queryFn = async () => (navigator.onLine ? fetchGameItemFromAPI() : fetchGameItemFromDB());
 
   // Fetch lyrics and update trackMap and IndexedDB
-  const fetchLyrics = async (trackIDs: string[], callback?: () => void) => {
+  const fetchLyrics = async (trackIDs: string[]) => {
+    if (!navigator.onLine) {
+      console.warn("Cannot fetch lyrics when offline");
+      return;
+    }
+
     const trackDataList = trackIDs.map((id) => ({
       artist: trackMap[id].artist,
       title: trackMap[id].name,
@@ -73,7 +82,6 @@ export function useGameData(type: "playlist" | "artist", id: string) {
       const returnedLyricMap: LyricMap = await res.json();
       const updatedTrackMap = updateTrackMapWithLyrics(trackIDs, returnedLyricMap);
       setTrackMap(updatedTrackMap);
-      callback?.();
     } else {
       console.error("Error fetching lyrics");
     }
@@ -122,6 +130,7 @@ export function useGame(
   const [isLoaded, setIsLoaded] = useState(false);
   const [isGameFinished, setGameFinished] = useState(false);
   const [trackOrder, setTrackOrder] = useState<string[]>([]);
+  const [isPlayable, setIsPlayable] = useState(true);
   const [currentTrackIndex, setCurrentTrackIndex] = useState<number>(0);
 
   // Wait until data is ready to load
@@ -135,9 +144,18 @@ export function useGame(
     let shuffledTrackIds: string[] = [];
 
     // Tracks with lyrics or tracks that haven't had lyrics fetched
-    const availableTrackIds = Object.values(trackMap)
+    let availableTrackIds = Object.values(trackMap)
       .filter((track) => track.lyrics || !track.hasFetchedLyrics)
       .map((track) => track.id);
+
+    // Only use tracks that have lyrics if offline
+    if (!navigator.onLine) availableTrackIds = availableTrackIds.filter((id) => trackMap[id].lyrics);
+
+    if (availableTrackIds.length < 10) {
+      console.log("Not enough tracks with lyrics to play");
+      setIsPlayable(false);
+      return;
+    }
 
     shuffledTrackIds = [...availableTrackIds];
     shuffleArray(shuffledTrackIds);
@@ -222,7 +240,7 @@ export function useGame(
       .slice(currentTrackIndex + 1, currentTrackIndex + 1 + fetchCount)
       .filter((id) => trackMap[id].lyrics);
 
-    if (remainingTracksWithLyrics.length < 3) {
+    if (remainingTracksWithLyrics.length < 3 && navigator.onLine) {
       const nextTracksToFetch = trackOrder
         .slice(currentTrackIndex + 1, currentTrackIndex + 1 + fetchCount)
         .filter((id) => !trackMap[id].hasFetchedLyrics);
@@ -243,6 +261,7 @@ export function useGame(
     isLoaded,
     trackOrder,
     currentTrackIndex,
+    isPlayable,
     loadGame,
     submit,
     finishGame
