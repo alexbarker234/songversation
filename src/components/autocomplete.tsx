@@ -102,7 +102,7 @@ export default function Autocomplete({ options, selected, className, setSelected
             <li
               key={option.id}
               onClick={() => handleOptionClick(option)}
-              className={`cursor-pointer px-4 py-2 text-white transition-colors duration-150 hover:bg-primary hover:text-black ${
+              className={`cursor-pointer px-4 py-2 text-white transition-colors duration-150 hover:bg-primary hover:font-semibold hover:text-white ${
                 keyboardOption === index ? "bg-primary font-semibold text-black" : "bg-grey-light"
               }`}
             >
