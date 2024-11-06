@@ -8,85 +8,97 @@ import { useEffect, useState } from "react";
 export function useGameData(type: "playlist" | "artist", id: string) {
   const [trackMap, setTrackMap] = useState<TrackMap>({});
 
-  const queryFn = async (): Promise<GameItem> => {
-    if (navigator.onLine) {
-      const itemResponse = await fetch(`/api/item/${type}/${id}`);
-      if (!itemResponse.ok) throw new Error("Failed to fetch game item from the server");
+  // Fetch GameItem from API
+  const fetchGameItemFromAPI = async (): Promise<GameItem> => {
+    const itemResponse = await fetch(`/api/item/${type}/${id}`);
+    if (!itemResponse.ok) throw new Error("Failed to fetch game item from the server");
 
-      const item: DetailedSpotifyItem = await itemResponse.json();
-      const gameItem: GameItem = {
-        id,
-        name: item.name,
-        imageURL: item.imageURL,
-        type,
-        trackIds: item.tracks.map((track) => track.id)
-      };
+    const item: DetailedSpotifyItem = await itemResponse.json();
+    const gameItem: GameItem = {
+      id,
+      name: item.name,
+      imageURL: item.imageURL,
+      type,
+      trackIds: item.tracks.map((track) => track.id)
+    };
 
-      await db.gameItems.put(gameItem);
+    await db.gameItems.put(gameItem);
+    await saveTracksToDB(item.tracks);
+    setTrackMap(createTrackMap(item.tracks));
 
-      const updatedTrackMap: TrackMap = {};
-      for (const track of item.tracks) {
-        await db.tracks.put(track);
-        updatedTrackMap[track.id] = track;
-      }
-
-      setTrackMap(updatedTrackMap);
-      return gameItem;
-    } else {
-      const cachedItem = await db.gameItems.get(id);
-      if (!cachedItem) throw new Error("No cached game item found");
-
-      const cachedTracks = await db.tracks.where("id").anyOf(cachedItem.trackIds).toArray();
-
-      const cachedTrackMap = Object.fromEntries(cachedTracks.map((track) => [track.id, track]));
-      setTrackMap(cachedTrackMap);
-
-      return cachedItem;
-    }
+    return gameItem;
   };
 
+  // Save tracks to IndexedDB and update trackMap
+  const saveTracksToDB = async (tracks: Track[]) => {
+    const trackMap = createTrackMap(tracks);
+    for (const track of tracks) {
+      await db.tracks.put(track);
+    }
+    return trackMap;
+  };
+
+  // Create a TrackMap from an array of tracks
+  const createTrackMap = (tracks: Track[]): TrackMap => Object.fromEntries(tracks.map((track) => [track.id, track]));
+
+  // Fetch GameItem from IndexedDB if offline
+  const fetchGameItemFromDB = async (): Promise<GameItem> => {
+    const cachedItem = await db.gameItems.get(id);
+    if (!cachedItem) throw new Error("No cached game item found");
+
+    const cachedTracks = await db.tracks.where("id").anyOf(cachedItem.trackIds).toArray();
+    setTrackMap(createTrackMap(cachedTracks));
+
+    return cachedItem;
+  };
+
+  // Main query function to handle online/offline logic
+  const queryFn = async () => (navigator.onLine ? fetchGameItemFromAPI() : fetchGameItemFromDB());
+
+  // Fetch lyrics and update trackMap and IndexedDB
   const fetchLyrics = async (trackIDs: string[], callback?: () => void) => {
     const trackDataList = trackIDs.map((id) => ({
       artist: trackMap[id].artist,
       title: trackMap[id].name,
       id
     }));
+
     const res = await fetch("/api/lyrics", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ trackDataList })
     });
-    if (!res.ok) {
+
+    if (res.ok) {
+      const returnedLyricMap: LyricMap = await res.json();
+      const updatedTrackMap = updateTrackMapWithLyrics(trackIDs, returnedLyricMap);
+      setTrackMap(updatedTrackMap);
+      callback?.();
+    } else {
       console.error("Error fetching lyrics");
-      return;
     }
-
-    const returnedLyricMap: LyricMap = await res.json();
-
-    // Update trackMap with lyrics and set hasFetchedLyrics to true
-    const updatedTrackMap: TrackMap = { ...trackMap };
-    for (const id of trackIDs) {
-      updatedTrackMap[id] = {
-        ...updatedTrackMap[id],
-        lyrics: returnedLyricMap[id] || updatedTrackMap[id].lyrics,
-        hasFetchedLyrics: true
-      };
-
-      // Update each track in IndexedDB with fetched lyrics
-      await db.tracks.update(id, {
-        lyrics: returnedLyricMap[id] || updatedTrackMap[id].lyrics,
-        hasFetchedLyrics: true
-      });
-    }
-    setTrackMap(updatedTrackMap);
-    callback?.();
   };
 
+  // Update trackMap and IndexedDB with fetched lyrics
+  const updateTrackMapWithLyrics = (trackIDs: string[], returnedLyricMap: LyricMap): TrackMap => {
+    const updatedTrackMap: TrackMap = { ...trackMap };
+
+    trackIDs.forEach((id) => {
+      const lyrics = returnedLyricMap[id] || updatedTrackMap[id].lyrics;
+      updatedTrackMap[id] = { ...updatedTrackMap[id], lyrics, hasFetchedLyrics: true };
+
+      // Update IndexedDB with fetched lyrics
+      db.tracks.update(id, { lyrics, hasFetchedLyrics: true });
+    });
+
+    return updatedTrackMap;
+  };
+
+  // Use React Query to handle data fetching and caching
   const gameDataQuery = useQuery({
     queryKey: ["gameItem", type, id],
     queryFn,
     refetchOnWindowFocus: false,
-    // todo fix the server render not knowing what navigator is
     retry: typeof navigator !== "undefined" && navigator.onLine ? 3 : false
   });
 
