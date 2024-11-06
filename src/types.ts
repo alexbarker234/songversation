@@ -25,6 +25,13 @@ interface Artist {
 
 // MISC
 
+interface DetailedSpotifyItem {
+  id: string;
+  name: string;
+  imageURL: string;
+  tracks: Track[];
+}
+
 interface SpotifyItem {
   id: string;
   name: string;
