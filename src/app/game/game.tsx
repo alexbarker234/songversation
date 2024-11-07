@@ -76,7 +76,9 @@ export default function Game({ type, id }: GameProps) {
 
   if (!isPlayable)
     return (
-      <div className="text-center text-xl">Sorry, we could not load enough tracks with lyrics to play offline</div>
+      <div className="my-12 text-center text-xl">
+        Sorry, we could not load enough tracks with lyrics to play offline
+      </div>
     );
 
   if (!isLoaded || !gameItem) return <Loading />;
@@ -94,7 +96,7 @@ export default function Game({ type, id }: GameProps) {
         <LyricBox lyricDisplay={lyricDisplay} trackId={currentTrackID} />
       </div>
 
-      <div className="fixed bottom-0 flex h-56 w-full flex-col items-center justify-center bg-zinc-950">
+      <div className="fixed bottom-0 flex w-full flex-col items-center justify-center bg-zinc-950 p-4 pb-10 md:pb-4">
         <Autocomplete
           options={autocompleteOptions}
           selected={selected}

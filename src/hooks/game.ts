@@ -19,7 +19,8 @@ export function useGameData(type: "playlist" | "artist", id: string) {
       name: item.name,
       imageURL: item.imageURL,
       type,
-      trackIds: item.tracks.map((track) => track.id)
+      trackIds: item.tracks.map((track) => track.id),
+      lastPlayed: new Date().getTime()
     };
 
     await db.gameItems.put(gameItem);
@@ -52,6 +53,9 @@ export function useGameData(type: "playlist" | "artist", id: string) {
     console.log(`${cachedTracksWithLyrics.length} cached tracks have lyrics`);
 
     setTrackMap(createTrackMap(cachedTracks));
+
+    cachedItem.lastPlayed = new Date().getTime();
+    await db.gameItems.put(cachedItem);
 
     return cachedItem;
   };
