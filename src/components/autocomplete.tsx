@@ -65,6 +65,9 @@ export default function Autocomplete({ options, selected, className, setSelected
       handleOptionClick(filteredOptions[keyboardOption]);
       e.preventDefault();
       e.stopPropagation();
+    } else if (e.key === "Escape") {
+      setIsMenuOpen(false);
+      e.preventDefault();
     }
   };
 

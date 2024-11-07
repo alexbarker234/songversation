@@ -74,12 +74,12 @@ export default function Game({ type, id }: GameProps) {
     setSelected(null);
   };
 
-  if (!isLoaded || !gameItem) return <Loading />;
-
   if (!isPlayable)
     return (
       <div className="text-center text-xl">Sorry, we could not load enough tracks with lyrics to play offline</div>
     );
+
+  if (!isLoaded || !gameItem) return <Loading />;
 
   return (
     <>

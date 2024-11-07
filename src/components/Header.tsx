@@ -1,12 +1,12 @@
 "use client";
 import Link from "next/link";
 
-export default function Nav() {
+export default function Header() {
   const text = "songversation.";
 
   let environment = "";
   if (process.env.NODE_ENV === "development") environment = "local";
-  else if (process.env.ENVIRONMENT === "dev") environment = "dev";
+  else if (process.env.NEXT_PUBLIC_ENVIRONMENT === "dev") environment = "dev";
 
   return (
     <nav className="relative flex items-center justify-center bg-primary p-1">

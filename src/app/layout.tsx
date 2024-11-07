@@ -1,4 +1,4 @@
-import Nav from "@/components/Header";
+import Header from "@/components/Header";
 import type { Metadata } from "next";
 import { FaGithub } from "react-icons/fa";
 import "./globals.css";
@@ -14,7 +14,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <Providers>
         <body className="flex h-screen flex-col bg-zinc-950 text-white">
-          <Nav />
+          <Header />
           {children}
           <a
             className="absolute bottom-0 right-0 m-2 opacity-50 transition-opacity hover:opacity-100"
