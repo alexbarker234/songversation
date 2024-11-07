@@ -36,7 +36,7 @@ export default function OfflineGames() {
         ))}
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-2">
         {savedGameItems
           .filter((item) => currentMenu === "all" || item.type === currentMenu)
           .map((item) => (
@@ -51,7 +51,7 @@ const GameItemDisplay = ({ item }: { item: GameItem }) => {
   return (
     <Link
       href={`/game/${item.type}/${item.id}`}
-      className="flex rounded-lg p-4 shadow transition-colors hover:bg-grey-light"
+      className="flex rounded-lg p-2 shadow transition-colors hover:bg-grey-light"
     >
       <img src={item.imageURL} alt={item.name} className="mr-2 h-16 w-16" />
       <div className="flex flex-col">

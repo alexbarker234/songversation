@@ -12,7 +12,7 @@ export default async function GamePage({ params }: { params: { type: string; ite
 
   return (
     <>
-      <Game type="artist" id={itemId} />
+      <Game type={type} id={itemId} />
     </>
   );
 }
