@@ -1,5 +1,5 @@
 "use client";
-import OfflineGames from "@/components/OfflineGames";
+import RecentGames from "@/components/RecentGames";
 import useOnline from "@/hooks/useOnline";
 import { cn } from "@/utils/cn";
 import Link from "next/link";
@@ -23,7 +23,7 @@ export default function Home() {
           disabled={!isOnline}
         />
       </div>
-      <OfflineGames />
+      <RecentGames />
     </div>
   );
 }

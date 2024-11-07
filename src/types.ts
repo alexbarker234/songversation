@@ -44,6 +44,7 @@ interface GameItem {
   imageURL: string;
   type: "playlist" | "artist";
   trackIds: string[];
+  lastPlayed?: number;
 }
 
 // LYRIC

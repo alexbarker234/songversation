@@ -8,7 +8,7 @@ import Button from "./Button";
 
 const buttonOptions = ["all", "artist", "playlist"] as const;
 
-export default function OfflineGames() {
+export default function RecentGames() {
   const [currentMenu, setCurrentMenu] = useState<"all" | "artist" | "playlist">("all");
   const [savedGameItems, setSavedGameItems] = useState<GameItem[]>([]);
   useEffect(() => {
@@ -19,9 +19,11 @@ export default function OfflineGames() {
     readData();
   }, []);
 
+  const sortedItems = savedGameItems.sort((a, b) => (a.lastPlayed && b.lastPlayed ? b.lastPlayed - a.lastPlayed : -1));
+
   return (
     <div className="mx-auto max-w-lg p-6">
-      <h1 className="mb-6 text-center text-2xl font-semibold">Offline Games</h1>
+      <h1 className="mb-6 text-center text-2xl font-semibold">Recent Games</h1>
 
       <div className="mb-4 flex justify-center gap-4">
         {buttonOptions.map((option) => (
@@ -37,7 +39,7 @@ export default function OfflineGames() {
       </div>
 
       <div className="space-y-2">
-        {savedGameItems
+        {sortedItems
           .filter((item) => currentMenu === "all" || item.type === currentMenu)
           .map((item) => (
             <GameItemDisplay key={item.id} item={item} />
