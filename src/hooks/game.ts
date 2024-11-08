@@ -1,12 +1,56 @@
 import { db } from "@/db/db";
 import { saveScore } from "@/lib/localScoreManager";
+import { DetailedSpotifyItem, GameItem, LyricMap, Track, TrackMap } from "@/types";
 import { randBetween } from "@/utils/mathUtils";
 import { shuffleArray } from "@/utils/utils";
 import { useQuery } from "@tanstack/react-query";
+import { useLiveQuery } from "dexie-react-hooks";
 import { useEffect, useState } from "react";
+
+const upsertGameItem = async (gameItem: GameItem) => {
+  const existingItem = await db.gameItems.get(gameItem.id);
+  if (existingItem) {
+    await db.gameItems.update(gameItem.id, {
+      name: gameItem.name,
+      imageURL: gameItem.imageURL,
+      type: gameItem.type,
+      trackIds: gameItem.trackIds,
+      lastPlayed: gameItem.lastPlayed
+    });
+  } else {
+    await db.gameItems.put(gameItem);
+  }
+};
+
+const upsertTrackItem = async (track: Track) => {
+  const existingTrack = await db.tracks.get(track.id);
+  if (existingTrack) {
+    await db.tracks.update(track.id, track);
+  } else {
+    await db.tracks.put(track);
+  }
+};
 
 export function useGameData(type: "playlist" | "artist", id: string) {
   const [trackMap, setTrackMap] = useState<TrackMap>({});
+
+  const liveGameItem = useLiveQuery(async () => await db.gameItems.get(id));
+
+  // Update offline ready
+  useEffect(() => {
+    if (!liveGameItem || !trackMap) return;
+    const updateOfflineReady = async () => {
+      if (!navigator.onLine) return;
+      // check if all tracks in the db have been fetched
+      const allTracksFetched = await db.tracks
+        .where("id")
+        .anyOf(liveGameItem.trackIds)
+        .toArray()
+        .then((tracks) => tracks.every((track) => track.lyrics !== undefined));
+      db.gameItems.update(id, { offlineReady: allTracksFetched });
+    };
+    updateOfflineReady();
+  }, [liveGameItem]);
 
   // Fetch GameItem from API
   const fetchGameItemFromAPI = async (): Promise<GameItem> => {
@@ -23,20 +67,24 @@ export function useGameData(type: "playlist" | "artist", id: string) {
       lastPlayed: new Date().getTime()
     };
 
-    await db.gameItems.put(gameItem);
+    // Load lyrics from DB if possible, but dont mark as fetched
+    const tracksWithLyrics = await db.tracks.where("id").anyOf(gameItem.trackIds).toArray();
+    item.tracks.forEach((track) => {
+      track.lyrics = tracksWithLyrics.find((t) => t.id === track.id)?.lyrics;
+    });
+
+    await upsertGameItem(gameItem);
     await saveTracksToDB(item.tracks);
     setTrackMap(createTrackMap(item.tracks));
 
     return gameItem;
   };
 
-  // Save tracks to IndexedDB and update trackMap
+  // Save tracks to IndexedDB
   const saveTracksToDB = async (tracks: Track[]) => {
-    const trackMap = createTrackMap(tracks);
     for (const track of tracks) {
-      await db.tracks.put(track);
+      upsertTrackItem(track);
     }
-    return trackMap;
   };
 
   // Create a TrackMap from an array of tracks
@@ -85,19 +133,20 @@ export function useGameData(type: "playlist" | "artist", id: string) {
 
     if (res.ok) {
       const returnedLyricMap: LyricMap = await res.json();
-      const updatedTrackMap = updateTrackMapWithLyrics(trackIDs, returnedLyricMap);
-      setTrackMap(updatedTrackMap);
+      setTrackMap((oldTrackMap) => updateTrackMapWithLyrics(oldTrackMap, trackIDs, returnedLyricMap));
     } else {
       console.error("Error fetching lyrics");
     }
   };
 
   // Update trackMap and IndexedDB with fetched lyrics
-  const updateTrackMapWithLyrics = (trackIDs: string[], returnedLyricMap: LyricMap): TrackMap => {
+  const updateTrackMapWithLyrics = (trackMap: TrackMap, trackIDs: string[], returnedLyricMap: LyricMap): TrackMap => {
     const updatedTrackMap: TrackMap = { ...trackMap };
 
     trackIDs.forEach((id) => {
-      const lyrics = returnedLyricMap[id] || updatedTrackMap[id].lyrics;
+      let lyrics = returnedLyricMap[id] || updatedTrackMap[id].lyrics;
+      if (!lyrics) lyrics = [];
+
       updatedTrackMap[id] = { ...updatedTrackMap[id], lyrics, hasFetchedLyrics: true };
 
       // Update IndexedDB with fetched lyrics
@@ -107,16 +156,17 @@ export function useGameData(type: "playlist" | "artist", id: string) {
     return updatedTrackMap;
   };
 
-  // Use React Query to handle data fetching and caching
+  // Modify the gameDataQuery to use the live data
   const gameDataQuery = useQuery({
     queryKey: ["gameItem", type, id],
     queryFn,
     refetchOnWindowFocus: false,
-    retry: typeof navigator !== "undefined" && navigator.onLine ? 3 : false
+    retry: typeof navigator !== "undefined" && navigator.onLine ? 3 : false,
+    initialData: liveGameItem
   });
 
   return {
-    gameItem: gameDataQuery.data,
+    gameItem: liveGameItem || gameDataQuery.data,
     isLoading: gameDataQuery.isLoading,
     trackMap,
     fetchLyrics
@@ -128,7 +178,7 @@ export function useGame(
   type: "playlist" | "artist",
   id: string,
   isDataReady: boolean,
-  fetchLyrics: (trackIds: string[], callback?: () => void) => void
+  fetchLyrics: (trackIds: string[]) => void
 ) {
   const [lyricDisplay, setLyricDisplay] = useState<string[]>(["", "", ""]);
   const [score, setScore] = useState<number>(0);
@@ -137,6 +187,10 @@ export function useGame(
   const [trackOrder, setTrackOrder] = useState<string[]>([]);
   const [isPlayable, setIsPlayable] = useState(true);
   const [currentTrackIndex, setCurrentTrackIndex] = useState<number>(0);
+
+  useEffect(() => {
+    setIsPlayable(true);
+  }, [trackMap]);
 
   // Wait until data is ready to load
   useEffect(() => {
@@ -166,22 +220,34 @@ export function useGame(
     shuffleArray(shuffledTrackIds);
 
     // Fetch the first 10 that don't already have lyrics
-    const tracksWithoutLyrics = shuffledTrackIds.filter((id) => !trackMap[id].lyrics).slice(0, 10);
+    const tracksWithoutLyrics = shuffledTrackIds.filter((id) => !trackMap[id].hasFetchedLyrics).slice(0, 10);
     const needsToFetch = tracksWithoutLyrics.length != 0;
+    const areLyricsCached = tracksWithoutLyrics.every((id) => trackMap[id].lyrics);
 
-    if (!needsToFetch) {
-      setIsLoaded(true);
-      setLyricDisplay(chooseLyrics(shuffledTrackIds[0]));
-    } else {
-      setIsLoaded(false);
+    const canStart = !needsToFetch || areLyricsCached;
+
+    if (needsToFetch) {
       fetchLyrics(tracksWithoutLyrics);
     }
 
-    setTrackOrder(shuffledTrackIds);
+    if (canStart) {
+      setLyricDisplay(chooseLyrics(findTrackWithLyrics(shuffledTrackIds)));
+      setIsLoaded(true);
+    }
 
+    setTrackOrder(shuffledTrackIds);
     setGameFinished(false);
     setScore(0);
     setCurrentTrackIndex(0);
+  };
+
+  const findTrackWithLyrics = (trackOrder: string[]) => {
+    const trackWithLyrics = trackOrder.find((id) => trackMap[id].lyrics);
+    if (!trackWithLyrics) {
+      console.error("No track with lyrics found");
+      return trackOrder[0];
+    }
+    return trackWithLyrics;
   };
 
   // For restarting games, when the lyrics need to be fetched
@@ -245,7 +311,7 @@ export function useGame(
     const fetchCount = 8;
     const remainingTracksWithLyrics = trackOrder
       .slice(currentTrackIndex + 1, currentTrackIndex + 1 + fetchCount)
-      .filter((id) => trackMap[id].lyrics);
+      .filter((id) => trackMap[id].lyrics && !trackMap[id].hasFetchedLyrics);
 
     // TODO figure out offline situation here
     if (remainingTracksWithLyrics.length < 3 && navigator.onLine) {

@@ -1,3 +1,4 @@
+import { Album, Artist, SpotifyItem, Track } from "@/types";
 import querystring from "querystring";
 
 const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
@@ -161,6 +162,7 @@ const fetchArtistAlbums = async (access_token: string, artistID: string) => {
 
   return albums;
 };
+
 const fetchTracksFromAlbumList = async (access_token: string, albums: Album[]) => {
   const start = Date.now();
 

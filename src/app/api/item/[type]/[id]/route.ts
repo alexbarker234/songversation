@@ -1,4 +1,5 @@
 import { getArtist, getArtistSongs, getPlaylist, getPlaylistTracks } from "@/lib/spotify";
+import { DetailedSpotifyItem } from "@/types";
 import { NextResponse } from "next/server";
 
 export async function GET(req: Request, { params }: { params: { type: string; id: string } }) {

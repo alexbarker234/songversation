@@ -1,6 +1,8 @@
 "use client";
 
 import { db } from "@/db/db";
+import { GameItem } from "@/types";
+import { cn } from "@/utils/cn";
 import { capitaliseFirstLetter } from "@/utils/utils";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -53,7 +55,9 @@ const GameItemDisplay = ({ item }: { item: GameItem }) => {
   return (
     <Link
       href={`/game/${item.type}/${item.id}`}
-      className="flex rounded-lg p-2 shadow transition-colors hover:bg-grey-light"
+      className={cn("flex rounded-lg p-2 shadow transition-colors hover:bg-grey-light", {
+        "pointer-events-none opacity-50": !item.offlineReady && !navigator.onLine
+      })}
     >
       <img src={item.imageURL} alt={item.name} className="mr-2 h-16 w-16" />
       <div className="flex flex-col">

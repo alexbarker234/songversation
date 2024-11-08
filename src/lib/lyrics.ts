@@ -1,3 +1,5 @@
+import { TrackInfo } from "@/types";
+
 export async function getLyrics(artist: string, title: string) {
   const url = `https://api.lyrics.ovh/v1/${encodeURIComponent(artist)}/${encodeURIComponent(title)}`;
 
@@ -53,7 +55,10 @@ export const getMultipleLyrics = async (tracks: TrackInfo[]) => {
 };
 
 const formatLyrics = (plainlyrics: string) => {
+  plainlyrics = plainlyrics.replace(/\r/g, "");
   let lyrics = plainlyrics.split("\n");
+  // todo figure out why the API returns this sometimes
+  lyrics = lyrics.filter((line) => !line.includes("Paroles de la chanson"));
   lyrics = lyrics.filter((line) => line.trim() !== "");
 
   return lyrics;
