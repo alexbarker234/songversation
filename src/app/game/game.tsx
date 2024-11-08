@@ -123,7 +123,7 @@ export default function Game({ type, id }: GameProps) {
         <LyricBox lyricDisplay={lyricDisplay} trackId={currentTrackID} />
       </div>
 
-      <div className="fixed bottom-0 flex w-full flex-col items-center justify-center bg-zinc-950 p-4 pb-10 md:pb-4">
+      <div className="bottom-0 flex w-full flex-col items-center justify-center bg-zinc-950 p-4 pb-10 md:fixed md:pb-4">
         <Autocomplete
           options={autocompleteOptions}
           selected={selected}
