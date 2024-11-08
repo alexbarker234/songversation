@@ -162,6 +162,7 @@ const fetchArtistAlbums = async (access_token: string, artistID: string) => {
 
   return albums;
 };
+
 const fetchTracksFromAlbumList = async (access_token: string, albums: Album[]) => {
   const start = Date.now();
 
