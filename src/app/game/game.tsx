@@ -93,33 +93,33 @@ export default function Game({ type, id }: GameProps) {
     if (offlineEnabled) Icon = MdDownloadForOffline;
 
     return (
-      <div className="flex items-center gap-2">
-        <Icon
-          size={30}
-          className={cn("cursor-pointer text-gray-500 transition-all hover:scale-105", {
-            "text-primary": offlineReady,
-            "hover:text-white": !offlineReady && offlineEnabled
-          })}
-          onClick={() => setOfflineEnabled(true)}
-          title={offlineReady ? "Offline Ready" : "Download Lyrics"}
-        />
-      </div>
+      <Icon
+        size={30}
+        className={cn("text-gray-500 transition-all", {
+          "text-primary": offlineReady,
+          "hover:text-white": !offlineReady && offlineEnabled,
+          "cursor-pointer hover:scale-105": !offlineEnabled
+        })}
+        onClick={() => setOfflineEnabled(true)}
+        title={offlineReady ? "Offline Ready" : "Download Lyrics"}
+      />
     );
   };
 
   return (
     <>
-      <div className="mb-1 mt-4 text-center text-3xl">
-        Which <span className="font-semibold">{gameItem.name}</span> song is this?
+      <div className="mb-1 mt-4 flex items-center justify-center text-center text-3xl">
+        <div>
+          Which <span className="font-semibold">{gameItem.name}</span> song is this?
+        </div>
+        <OfflineButton />
       </div>
       <div className="flex w-full flex-col items-center text-center">
         <div className="flex items-center text-xs text-gray-500">
           <span>{Object.keys(trackMap).length} tracks loaded</span>
           <FieldInfoHover content="Some tracks may not have lyrics, so will not be included in the game" />
         </div>
-        <div className="flex items-center gap-2">
-          <OfflineButton />
-        </div>
+        <div className="flex items-center gap-2"></div>
         <LyricBox lyricDisplay={lyricDisplay} trackId={currentTrackID} />
       </div>
 
