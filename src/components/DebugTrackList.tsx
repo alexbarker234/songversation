@@ -39,8 +39,9 @@ function DebugTrackList({
               key={track.id}
               className={cn("flex flex-col rounded-md border-2 p-2", {
                 "border-green-500": track.hasFetchedLyrics && track.lyrics,
-                "border-red-500": track.hasFetchedLyrics && !track.lyrics,
-                "border-yellow-500": !track.hasFetchedLyrics,
+                "border-red-500": track.hasFetchedLyrics && !track.lyrics, // No lyrics found
+                "border-yellow-500": !track.hasFetchedLyrics, // Not fetched
+                "border-blue-500": track.lyrics && !track.hasFetchedLyrics, // Cached
                 "bg-primary font-bold": index === currentTrackIndex
               })}
             >

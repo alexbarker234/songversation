@@ -26,6 +26,23 @@ export function useGameData(type: "playlist" | "artist", id: string) {
   const [trackMap, setTrackMap] = useState<TrackMap>({});
 
   const liveGameItem = useLiveQuery(async () => await db.gameItems.get(id));
+
+  // Update offline ready
+  useEffect(() => {
+    if (!liveGameItem || !trackMap) return;
+    const updateOfflineReady = async () => {
+      // check if all tracks in the db have been fetched
+      const allTracksFetched = await db.tracks
+        .where("id")
+        .anyOf(liveGameItem.trackIds)
+        .toArray()
+        .then((tracks) => tracks.every((track) => track.hasFetchedLyrics));
+      console.log("allTracksFetched", allTracksFetched);
+      db.gameItems.update(id, { offlineReady: allTracksFetched });
+    };
+    updateOfflineReady();
+  }, [liveGameItem]);
+
   // Fetch GameItem from API
   const fetchGameItemFromAPI = async (): Promise<GameItem> => {
     const itemResponse = await fetch(`/api/item/${type}/${id}`);
@@ -40,6 +57,13 @@ export function useGameData(type: "playlist" | "artist", id: string) {
       trackIds: item.tracks.map((track) => track.id),
       lastPlayed: new Date().getTime()
     };
+
+    // Load lyrics from DB if possible, but dont mark as fetched
+    const tracksWithLyrics = await db.tracks.where("id").anyOf(gameItem.trackIds).toArray();
+    item.tracks.forEach((track) => {
+      track.lyrics = tracksWithLyrics.find((t) => t.id === track.id)?.lyrics;
+    });
+    console.log(item.tracks);
 
     await upsertGameItem(gameItem);
     await saveTracksToDB(item.tracks);
@@ -119,7 +143,6 @@ export function useGameData(type: "playlist" | "artist", id: string) {
 
       // Update IndexedDB with fetched lyrics
       db.tracks.update(id, { lyrics, hasFetchedLyrics: true });
-      console.debug(`Updated lyrics for ${updatedTrackMap[id].name}`);
     });
 
     return updatedTrackMap;

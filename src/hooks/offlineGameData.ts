@@ -23,13 +23,16 @@ export const useOfflineGameData = (
   }, [trackMap]);
 
   useEffect(() => {
-    if (!offlineEnabled || !gameItem || inProgress) return;
+    console.log({ offlineEnabled, gameItem, inProgress, trackMap });
+    if (!offlineEnabled || !gameItem || inProgress || !Object.values(trackMap).length) return;
 
     const fetchAllLyrics = async () => {
+      console.log("Starting offline prefetch");
+      setInProgress(true);
       const tracksWithoutLyrics = Object.values(trackMap)
         .filter((track) => !track.lyrics && !track.hasFetchedLyrics)
         .map((track) => track.id);
-
+      console.log("tracksWithoutLyrics", tracksWithoutLyrics);
       const totalTracks = tracksWithoutLyrics.length;
       if (totalTracks === 0) {
         await markAsOfflineReady();
@@ -47,7 +50,6 @@ export const useOfflineGameData = (
     };
 
     fetchAllLyrics();
-    setInProgress(true);
   }, [offlineEnabled, trackMap, fetchLyrics]);
 
   const updateProgress = async () => {
