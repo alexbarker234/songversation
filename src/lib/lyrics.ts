@@ -1,3 +1,5 @@
+import { TrackInfo } from "@/types";
+
 export async function getLyrics(artist: string, title: string) {
   const url = `https://api.lyrics.ovh/v1/${encodeURIComponent(artist)}/${encodeURIComponent(title)}`;
 

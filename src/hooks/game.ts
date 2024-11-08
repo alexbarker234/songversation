@@ -1,5 +1,6 @@
 import { db } from "@/db/db";
 import { saveScore } from "@/lib/localScoreManager";
+import { DetailedSpotifyItem, GameItem, LyricMap, Track, TrackMap } from "@/types";
 import { randBetween } from "@/utils/mathUtils";
 import { shuffleArray } from "@/utils/utils";
 import { useQuery } from "@tanstack/react-query";
@@ -85,15 +86,14 @@ export function useGameData(type: "playlist" | "artist", id: string) {
 
     if (res.ok) {
       const returnedLyricMap: LyricMap = await res.json();
-      const updatedTrackMap = updateTrackMapWithLyrics(trackIDs, returnedLyricMap);
-      setTrackMap(updatedTrackMap);
+      setTrackMap((oldTrackMap) => updateTrackMapWithLyrics(oldTrackMap, trackIDs, returnedLyricMap));
     } else {
       console.error("Error fetching lyrics");
     }
   };
 
   // Update trackMap and IndexedDB with fetched lyrics
-  const updateTrackMapWithLyrics = (trackIDs: string[], returnedLyricMap: LyricMap): TrackMap => {
+  const updateTrackMapWithLyrics = (trackMap: TrackMap, trackIDs: string[], returnedLyricMap: LyricMap): TrackMap => {
     const updatedTrackMap: TrackMap = { ...trackMap };
 
     trackIDs.forEach((id) => {
@@ -102,6 +102,7 @@ export function useGameData(type: "playlist" | "artist", id: string) {
 
       // Update IndexedDB with fetched lyrics
       db.tracks.update(id, { lyrics, hasFetchedLyrics: true });
+      console.debug(`Updated lyrics for ${updatedTrackMap[id].name}`);
     });
 
     return updatedTrackMap;
@@ -128,7 +129,7 @@ export function useGame(
   type: "playlist" | "artist",
   id: string,
   isDataReady: boolean,
-  fetchLyrics: (trackIds: string[], callback?: () => void) => void
+  fetchLyrics: (trackIds: string[]) => void
 ) {
   const [lyricDisplay, setLyricDisplay] = useState<string[]>(["", "", ""]);
   const [score, setScore] = useState<number>(0);

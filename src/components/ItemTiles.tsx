@@ -1,4 +1,5 @@
 import Loading from "@/app/loading";
+import { SpotifyItem } from "@/types";
 
 export default function ItemTiles({ items, isLoading }: { items: SpotifyItem[]; isLoading: boolean }) {
   if (isLoading)
@@ -14,7 +15,7 @@ export default function ItemTiles({ items, isLoading }: { items: SpotifyItem[]; 
         items.map((item, index) => (
           <div
             key={item.id}
-            className="item-box h-68 animate-fade-drop-in relative flex w-48 flex-col items-center overflow-hidden opacity-0 transition-opacity duration-200"
+            className="item-box h-68 relative flex w-48 animate-fade-drop-in flex-col items-center overflow-hidden opacity-0 transition-opacity duration-200"
             style={{ animationDelay: `${index * 0.05}s` }}
           >
             <a href={`/game/artist/${item.id}`}>

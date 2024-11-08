@@ -1,6 +1,7 @@
 "use client";
 
 import { db } from "@/db/db";
+import { GameItem } from "@/types";
 import { capitaliseFirstLetter } from "@/utils/utils";
 import Link from "next/link";
 import { useEffect, useState } from "react";

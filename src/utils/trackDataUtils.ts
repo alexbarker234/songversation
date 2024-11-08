@@ -1,5 +1,6 @@
 import { getMultipleLyrics } from "@/lib/lyrics";
 import { getArtistSongs, getPlaylistTracks } from "@/lib/spotify";
+import { LyricMap, TrackMap } from "@/types";
 import { shuffleArray } from "./utils";
 
 export async function getStartTrackData(id: string, type: "artist" | "playlist") {

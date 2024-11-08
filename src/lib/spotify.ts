@@ -1,3 +1,4 @@
+import { SpotifyItem } from "@/types";
 import querystring from "querystring";
 
 const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;

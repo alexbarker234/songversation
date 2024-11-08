@@ -6,11 +6,15 @@ import DebugTrackList from "@/components/DebugTrackList";
 import FieldInfoHover from "@/components/InfoHover";
 import Modal from "@/components/modal";
 import { useGame, useGameData } from "@/hooks/game";
+import { useOfflineGameData } from "@/hooks/offlineGameData";
 import { getScore } from "@/lib/localScoreManager";
+import { Track } from "@/types";
 import { cn } from "@/utils/cn";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Confetti from "react-confetti";
+import { IconType } from "react-icons";
+import { MdDownloadForOffline, MdOutlineDownloadForOffline } from "react-icons/md";
 import Loading from "../loading";
 
 interface GameProps {
@@ -21,6 +25,11 @@ interface GameProps {
 export default function Game({ type, id }: GameProps) {
   const [selected, setSelected] = useState<AutocompleteOption | null>(null);
   const { gameItem, isLoading, trackMap, fetchLyrics } = useGameData(type, id);
+  const {
+    progress,
+    enabled: offlineEnabled,
+    setEnabled: setOfflineEnabled
+  } = useOfflineGameData(gameItem, trackMap, fetchLyrics);
 
   useEffect(() => {
     if (navigator.onLine) return;
@@ -83,15 +92,35 @@ export default function Game({ type, id }: GameProps) {
 
   if (!isLoaded || !gameItem) return <Loading />;
 
+  const OfflineButton = () => {
+    let Icon: IconType = MdOutlineDownloadForOffline;
+    if (offlineEnabled) Icon = MdDownloadForOffline;
+
+    return (
+      <div className="flex items-center gap-2">
+        <Icon
+          size={30}
+          className={cn("cursor-pointer text-gray-500 transition-all hover:scale-105 hover:text-white", {
+            "text-primary": progress === 100
+          })}
+          onClick={() => setOfflineEnabled(true)}
+        />
+      </div>
+    );
+  };
+
   return (
     <>
-      <div className="my-4 text-center text-3xl">
+      <div className="mb-1 mt-4 text-center text-3xl">
         Which <span className="font-semibold">{gameItem.name}</span> song is this?
       </div>
       <div className="flex w-full flex-col items-center text-center">
         <div className="flex items-center text-xs text-gray-500">
           <span>{Object.keys(trackMap).length} tracks loaded</span>
           <FieldInfoHover content="Some tracks may not have lyrics, so will not be included in the game" />
+        </div>
+        <div className="flex items-center gap-2">
+          <OfflineButton />
         </div>
         <LyricBox lyricDisplay={lyricDisplay} trackId={currentTrackID} />
       </div>

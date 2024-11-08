@@ -1,3 +1,4 @@
+import { TrackMap } from "@/types";
 import { cn } from "@/utils/cn";
 import { useState } from "react";
 import { FaCaretLeft, FaCaretRight } from "react-icons/fa";
@@ -33,17 +34,13 @@ function DebugTrackList({
       <div className="mb-8 flex flex-col gap-2 overflow-y-auto">
         {trackOrder.map((trackID, index) => {
           const track = trackMap[trackID];
-          let borderColor;
-          if (track.hasFetchedLyrics) {
-            borderColor = track.lyrics ? "border-green-500" : "border-red-500";
-          } else {
-            borderColor = "border-yellow-500";
-          }
-
           return (
             <div
               key={track.id}
-              className={cn("flex flex-col rounded-md border-2 p-2", borderColor, {
+              className={cn("flex flex-col rounded-md border-2 p-2", {
+                "border-green-500": track.hasFetchedLyrics && track.lyrics,
+                "border-red-500": track.hasFetchedLyrics && !track.lyrics,
+                "border-yellow-500": !track.hasFetchedLyrics,
                 "bg-primary font-bold": index === currentTrackIndex
               })}
             >
