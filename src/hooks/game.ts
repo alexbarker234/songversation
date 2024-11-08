@@ -4,11 +4,28 @@ import { DetailedSpotifyItem, GameItem, LyricMap, Track, TrackMap } from "@/type
 import { randBetween } from "@/utils/mathUtils";
 import { shuffleArray } from "@/utils/utils";
 import { useQuery } from "@tanstack/react-query";
+import { useLiveQuery } from "dexie-react-hooks";
 import { useEffect, useState } from "react";
+
+const upsertGameItem = async (gameItem: GameItem) => {
+  const existingItem = await db.gameItems.get(gameItem.id);
+  if (existingItem) {
+    await db.gameItems.update(gameItem.id, {
+      name: gameItem.name,
+      imageURL: gameItem.imageURL,
+      type: gameItem.type,
+      trackIds: gameItem.trackIds,
+      lastPlayed: gameItem.lastPlayed
+    });
+  } else {
+    await db.gameItems.put(gameItem);
+  }
+};
 
 export function useGameData(type: "playlist" | "artist", id: string) {
   const [trackMap, setTrackMap] = useState<TrackMap>({});
 
+  const liveGameItem = useLiveQuery(async () => await db.gameItems.get(id));
   // Fetch GameItem from API
   const fetchGameItemFromAPI = async (): Promise<GameItem> => {
     const itemResponse = await fetch(`/api/item/${type}/${id}`);
@@ -24,7 +41,7 @@ export function useGameData(type: "playlist" | "artist", id: string) {
       lastPlayed: new Date().getTime()
     };
 
-    await db.gameItems.put(gameItem);
+    await upsertGameItem(gameItem);
     await saveTracksToDB(item.tracks);
     setTrackMap(createTrackMap(item.tracks));
 
@@ -108,16 +125,17 @@ export function useGameData(type: "playlist" | "artist", id: string) {
     return updatedTrackMap;
   };
 
-  // Use React Query to handle data fetching and caching
+  // Modify the gameDataQuery to use the live data
   const gameDataQuery = useQuery({
     queryKey: ["gameItem", type, id],
     queryFn,
     refetchOnWindowFocus: false,
-    retry: typeof navigator !== "undefined" && navigator.onLine ? 3 : false
+    retry: typeof navigator !== "undefined" && navigator.onLine ? 3 : false,
+    initialData: liveGameItem
   });
 
   return {
-    gameItem: gameDataQuery.data,
+    gameItem: liveGameItem || gameDataQuery.data,
     isLoading: gameDataQuery.isLoading,
     trackMap,
     fetchLyrics

@@ -7,16 +7,23 @@ export const useOfflineGameData = (
   trackMap: TrackMap,
   fetchLyrics: (trackIds: string[]) => void
 ) => {
-  const [enabled, setEnabled] = useState(false);
+  const [offlineEnabled, setEnabled] = useState(false);
+  const [offlineReady, setOfflineReady] = useState(false);
   const [progress, setProgress] = useState(0);
   const [inProgress, setInProgress] = useState(false);
+
+  useEffect(() => {
+    if (!gameItem) return;
+    setEnabled(gameItem.offlineEnabled ?? false);
+    setOfflineReady(gameItem.offlineReady ?? false);
+  }, [gameItem]);
 
   useEffect(() => {
     updateProgress();
   }, [trackMap]);
 
   useEffect(() => {
-    if (!enabled || !gameItem || inProgress) return;
+    if (!offlineEnabled || !gameItem || inProgress) return;
 
     const fetchAllLyrics = async () => {
       const tracksWithoutLyrics = Object.values(trackMap)
@@ -37,12 +44,11 @@ export const useOfflineGameData = (
       }
 
       await markAsOfflineReady();
-      setEnabled(false);
     };
 
     fetchAllLyrics();
     setInProgress(true);
-  }, [enabled, trackMap, fetchLyrics]);
+  }, [offlineEnabled, trackMap, fetchLyrics]);
 
   const updateProgress = async () => {
     if (!gameItem) return;
@@ -63,5 +69,11 @@ export const useOfflineGameData = (
 
   const markAsOfflineReady = async () => gameItem && (await db.gameItems.update(gameItem.id, { offlineReady: true }));
 
-  return { progress, enabled, setEnabled };
+  const setOfflineEnabled = async (enabled: boolean) => {
+    if (!gameItem) return;
+    setEnabled(enabled);
+    await db.gameItems.update(gameItem.id, { offlineEnabled: enabled });
+  };
+
+  return { offlineReady, offlineEnabled, setOfflineEnabled };
 };

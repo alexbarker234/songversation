@@ -25,11 +25,7 @@ interface GameProps {
 export default function Game({ type, id }: GameProps) {
   const [selected, setSelected] = useState<AutocompleteOption | null>(null);
   const { gameItem, isLoading, trackMap, fetchLyrics } = useGameData(type, id);
-  const {
-    progress,
-    enabled: offlineEnabled,
-    setEnabled: setOfflineEnabled
-  } = useOfflineGameData(gameItem, trackMap, fetchLyrics);
+  const { offlineReady, offlineEnabled, setOfflineEnabled } = useOfflineGameData(gameItem, trackMap, fetchLyrics);
 
   useEffect(() => {
     if (navigator.onLine) return;
@@ -100,10 +96,12 @@ export default function Game({ type, id }: GameProps) {
       <div className="flex items-center gap-2">
         <Icon
           size={30}
-          className={cn("cursor-pointer text-gray-500 transition-all hover:scale-105 hover:text-white", {
-            "text-primary": progress === 100
+          className={cn("cursor-pointer text-gray-500 transition-all hover:scale-105", {
+            "text-primary": offlineReady,
+            "hover:text-white": !offlineReady && offlineEnabled
           })}
           onClick={() => setOfflineEnabled(true)}
+          title={offlineReady ? "Offline Ready" : "Download Lyrics"}
         />
       </div>
     );

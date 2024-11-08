@@ -45,6 +45,7 @@ export interface GameItem {
   type: "playlist" | "artist";
   trackIds: string[];
   lastPlayed?: number;
+  offlineEnabled?: boolean;
   offlineReady?: boolean;
 }
 
