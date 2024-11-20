@@ -97,21 +97,21 @@ export function useGameData(type: "playlist" | "artist", id: string) {
   // Fetch GameItem from IndexedDB if offline
   const fetchGameItemFromDB = async (): Promise<GameItem> => {
     console.log("Fetching game item from DB");
-    const cachedItem = await db.gameItems.get(id);
-    if (!cachedItem) throw new Error("No cached game item found");
+    const cachedGameItem = await db.gameItems.get(id);
+    if (!cachedGameItem) throw new Error("No cached game item found");
 
-    const cachedTracks = await db.tracks.where("id").anyOf(cachedItem.trackIds).toArray();
+    const cachedTracks = await db.tracks.where("id").anyOf(cachedGameItem.trackIds).toArray();
 
     const cachedTracksWithLyrics = cachedTracks.filter((track) => trackHasLyrics(track));
     console.log(`${cachedTracksWithLyrics.length} cached tracks have lyrics`);
 
     setTrackMap(createTrackMap(cachedTracks));
 
-    cachedItem.lastPlayed = new Date().getTime();
-    await db.gameItems.put(cachedItem);
+    cachedGameItem.lastPlayed = new Date().getTime();
+    await db.gameItems.put(cachedGameItem);
 
     setIsDataReady(true);
-    return cachedItem;
+    return cachedGameItem;
   };
 
   // Main query function to handle online/offline logic
@@ -171,7 +171,7 @@ export function useGameData(type: "playlist" | "artist", id: string) {
     refetchOnWindowFocus: false,
     retry: typeof navigator !== "undefined" && navigator.onLine ? 3 : false,
     initialData: liveGameItem,
-    refetchOnMount: true
+    refetchOnMount: true // TODO make trackmap load
   });
 
   return {
