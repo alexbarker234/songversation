@@ -34,6 +34,7 @@ const upsertTrackItem = async (track: Track) => {
 
 export function useGameData(type: "playlist" | "artist", id: string) {
   const [trackMap, setTrackMap] = useState<TrackMap>({});
+  const [isDataReady, setIsDataReady] = useState(false);
 
   const liveGameItem = useLiveQuery(async () => await db.gameItems.get(id));
 
@@ -55,6 +56,7 @@ export function useGameData(type: "playlist" | "artist", id: string) {
 
   // Fetch GameItem from API
   const fetchGameItemFromAPI = async (): Promise<GameItem> => {
+    console.log("Fetching game item from API");
     const itemResponse = await fetch(`/api/item/${type}/${id}`);
     if (!itemResponse.ok) throw new Error("Failed to fetch game item from the server");
 
@@ -77,6 +79,7 @@ export function useGameData(type: "playlist" | "artist", id: string) {
     await upsertGameItem(gameItem);
     await saveTracksToDB(item.tracks);
     setTrackMap(createTrackMap(item.tracks));
+    setIsDataReady(true);
 
     return gameItem;
   };
@@ -93,6 +96,7 @@ export function useGameData(type: "playlist" | "artist", id: string) {
 
   // Fetch GameItem from IndexedDB if offline
   const fetchGameItemFromDB = async (): Promise<GameItem> => {
+    console.log("Fetching game item from DB");
     const cachedItem = await db.gameItems.get(id);
     if (!cachedItem) throw new Error("No cached game item found");
 
@@ -106,6 +110,7 @@ export function useGameData(type: "playlist" | "artist", id: string) {
     cachedItem.lastPlayed = new Date().getTime();
     await db.gameItems.put(cachedItem);
 
+    setIsDataReady(true);
     return cachedItem;
   };
 
@@ -165,12 +170,13 @@ export function useGameData(type: "playlist" | "artist", id: string) {
     queryFn,
     refetchOnWindowFocus: false,
     retry: typeof navigator !== "undefined" && navigator.onLine ? 3 : false,
-    initialData: liveGameItem
+    initialData: liveGameItem,
+    refetchOnMount: true
   });
 
   return {
     gameItem: liveGameItem || gameDataQuery.data,
-    isLoading: gameDataQuery.isLoading,
+    isLoading: !isDataReady,
     trackMap,
     fetchLyrics
   };
@@ -274,6 +280,7 @@ export function useGame(
     setIsLoaded(true);
     if (!trackOrder[index] || index === -1) {
       setErrorMessage("No tracks with lyrics found");
+      console.log({ trackOrder, index });
       setIsPlayable(false);
       return;
     }
