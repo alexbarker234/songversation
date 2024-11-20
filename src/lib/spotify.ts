@@ -104,7 +104,7 @@ export const getPlaylist = async (playlistID: string) => {
 
   const data: SpotifyPlaylistItem = await response.json();
 
-  const playlist: SpotifyItem = { id: data.id, imageURL: data.images[0]?.url, name: data.name };
+  const playlist: SpotifyItem = { id: data.id, imageURL: data.images[0]?.url ?? "", name: data.name };
 
   return playlist;
 };
@@ -124,8 +124,8 @@ export const getPlaylistTracks = async (playlistID: string) => {
     tracks.map((item: SpotifyPlaylistTrackItem) => ({
       id: item.track.id,
       name: item.track.name,
-      artist: item.track.artists[0].name,
-      imageURL: item.track.album.images[0]?.url
+      artist: item.track.artists[0]?.name ?? "",
+      imageURL: item.track.album.images[0]?.url ?? ""
     }));
 
   // Extract tracks from the initial response
@@ -163,7 +163,7 @@ export const getArtist = async (id: string) => {
 
   const data: SpotifyArtistItem = await response.json();
 
-  const artist: Artist = { id: data.id, imageURL: data.images[0]?.url, name: data.name };
+  const artist: Artist = { id: data.id, imageURL: data.images[0]?.url ?? "", name: data.name };
 
   return artist;
 };
@@ -196,7 +196,9 @@ const fetchArtistAlbums = async (access_token: string, artistID: string) => {
         next: { revalidate: 6000 }
       })
     ).json();
-    albums.push(...response.items.map((item) => ({ id: item.id, imageURL: item.images[0]?.url, name: item.name })));
+    albums.push(
+      ...response.items.map((item) => ({ id: item.id, imageURL: item.images[0]?.url || "", name: item.name }))
+    );
     nextTracksEndpoint = response.next;
   } while (nextTracksEndpoint);
 
@@ -232,8 +234,8 @@ const fetchTracksFromAlbumList = async (access_token: string, albums: Album[]) =
       ...response.items.map((item: SpotifyTrackItem) => ({
         id: item.id,
         name: item.name,
-        artist: item.artists[0].name,
-        imageURL: album.imageURL
+        artist: item.artists[0]?.name ?? "",
+        imageURL: album?.imageURL ?? ""
       }))
     );
   });
@@ -298,8 +300,8 @@ export const fetchTrackByID = async (trackID: string) => {
     trackData = {
       id: response.id,
       name: response.name,
-      artist: response.artists[0].name,
-      imageURL: response.album.images[0]?.url
+      artist: response.artists[0]?.name ?? "",
+      imageURL: response.album.images[0]?.url ?? ""
     };
   } catch (error) {
     console.error(`Failed to fetch track with ID ${trackID}:`, error);
@@ -325,7 +327,7 @@ export const fetchTracksByIDs = async (trackIDs: string[]) => {
     const tracksData = data.tracks.map((track) => ({
       id: track.id,
       name: track.name,
-      artist: track.artists[0].name,
+      artist: track.artists[0]?.name,
       imageURL: track.album.images[0]?.url
     }));
 

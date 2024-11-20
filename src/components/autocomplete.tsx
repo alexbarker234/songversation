@@ -63,7 +63,7 @@ export default function Autocomplete({ options, selected, className, setSelected
     } else if (e.key === "ArrowUp") {
       setKeyboardOption((prevOption) => (prevOption <= 0 ? filteredOptions.length - 1 : prevOption - 1));
       e.preventDefault();
-    } else if (e.key === "Enter" && keyboardOption >= 0) {
+    } else if (e.key === "Enter" && keyboardOption >= 0 && filteredOptions[keyboardOption]) {
       handleOptionClick(filteredOptions[keyboardOption]);
       e.preventDefault();
       e.stopPropagation();

@@ -47,6 +47,8 @@ export const getMultipleLyrics = async (tracks: TrackInfo[]) => {
   console.log(`Fetched ${tracks.length} lyrics in ${Date.now() - start} ms`);
 
   responses.forEach((response, index) => {
+    if (!tracks[index]) return;
+
     const { artist, title, id } = tracks[index];
     if (response) lyricMap[id] = formatLyrics(response.lyrics);
   });

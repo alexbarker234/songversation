@@ -7,9 +7,7 @@ export interface Track {
   lyrics?: string[];
   hasFetchedLyrics?: boolean;
 }
-export interface TrackMap {
-  [key: string]: Track;
-}
+export type TrackMap = Record<string, Track>;
 // ALBUM
 export interface Album {
   id: string;

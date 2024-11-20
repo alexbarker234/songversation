@@ -47,7 +47,7 @@ export default function Game({ type, id }: GameProps) {
   } = useGame(trackMap, type, id, !isLoading, fetchLyrics);
 
   const autocompleteOptions = Object.keys(trackMap).map((key) => ({
-    label: `${trackMap[key].artist} - ${trackMap[key].name}`,
+    label: `${trackMap[key]?.artist} - ${trackMap[key]?.name}`,
     id: key
   }));
 
@@ -87,6 +87,9 @@ export default function Game({ type, id }: GameProps) {
     );
 
   if (!isLoaded || !gameItem) return <Loading />;
+
+  // throw error?
+  if (!currentTrackID) return null;
 
   const OfflineButton = () => {
     let Icon: IconType = MdOutlineDownloadForOffline;

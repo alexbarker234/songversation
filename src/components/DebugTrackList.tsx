@@ -35,6 +35,7 @@ function DebugTrackList({
       <div className="mb-8 flex flex-col gap-2 overflow-y-auto">
         {trackOrder.map((trackID, index) => {
           const track = trackMap[trackID];
+          if (!track) return null;
           return (
             <div
               key={track.id}
