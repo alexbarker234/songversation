@@ -7,6 +7,7 @@ export const useOfflineGameData = (
   trackMap: TrackMap,
   fetchLyrics: (trackIds: string[]) => void
 ) => {
+  const [isLoading, setIsLoading] = useState(false);
   const [offlineEnabled, setEnabled] = useState(false);
   const [offlineReady, setOfflineReady] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -14,6 +15,7 @@ export const useOfflineGameData = (
 
   useEffect(() => {
     if (!gameItem) return;
+    setIsLoading(false);
     setEnabled(gameItem.offlineEnabled ?? false);
     setOfflineReady(gameItem.offlineReady ?? false);
   }, [gameItem]);
@@ -26,12 +28,12 @@ export const useOfflineGameData = (
     if (!offlineEnabled || !gameItem || inProgress || !Object.values(trackMap).length) return;
 
     const fetchAllLyrics = async () => {
-      console.log("Starting offline prefetch");
       setInProgress(true);
       const tracksWithoutLyrics = Object.values(trackMap)
         .filter((track) => !track.lyrics && !track.hasFetchedLyrics)
         .map((track) => track.id);
       const totalTracks = tracksWithoutLyrics.length;
+      console.log(`Starting offline prefetch: ${totalTracks} tracks to fetch`);
       if (totalTracks === 0) {
         await markAsOfflineReady();
         return;
@@ -67,7 +69,10 @@ export const useOfflineGameData = (
     setProgress(Math.min((fetchedTracks / totalTracks) * 100, 100));
   };
 
-  const markAsOfflineReady = async () => gameItem && (await db.gameItems.update(gameItem.id, { offlineReady: true }));
+  const markAsOfflineReady = async () => {
+    console.log("Marking game item as offline ready");
+    gameItem && (await db.gameItems.update(gameItem.id, { offlineReady: true }));
+  };
 
   const setOfflineEnabled = async (enabled: boolean) => {
     if (!gameItem) return;
@@ -75,5 +80,5 @@ export const useOfflineGameData = (
     await db.gameItems.update(gameItem.id, { offlineEnabled: enabled });
   };
 
-  return { offlineReady, offlineEnabled, setOfflineEnabled };
+  return { isLoading, offlineReady, offlineEnabled, setOfflineEnabled };
 };

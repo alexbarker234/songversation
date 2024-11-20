@@ -25,12 +25,19 @@ interface GameProps {
 export default function Game({ type, id }: GameProps) {
   const [selected, setSelected] = useState<AutocompleteOption | null>(null);
   const { gameItem, isLoading, trackMap, fetchLyrics } = useGameData(type, id);
-  const { offlineReady, offlineEnabled, setOfflineEnabled } = useOfflineGameData(gameItem, trackMap, fetchLyrics);
+  const {
+    isLoading: isOfflineLoading,
+    offlineReady,
+    offlineEnabled,
+    setOfflineEnabled
+  } = useOfflineGameData(gameItem, trackMap, fetchLyrics);
 
   useEffect(() => {
     if (navigator.onLine) return;
     console.log("You are offline");
   }, []);
+
+  const isDataReady = !isLoading && !isOfflineLoading;
 
   const {
     currentTrackID,
@@ -41,10 +48,11 @@ export default function Game({ type, id }: GameProps) {
     trackOrder,
     currentTrackIndex,
     isPlayable,
+    errorMessage,
     loadGame,
     submit,
     finishGame
-  } = useGame(trackMap, type, id, !isLoading, fetchLyrics);
+  } = useGame(trackMap, type, id, isDataReady, offlineReady, fetchLyrics);
 
   const autocompleteOptions = Object.keys(trackMap).map((key) => ({
     label: `${trackMap[key]?.artist} - ${trackMap[key]?.name}`,
@@ -79,17 +87,13 @@ export default function Game({ type, id }: GameProps) {
     setSelected(null);
   };
 
-  if (!isPlayable)
-    return (
-      <div className="my-12 text-center text-xl">
-        Sorry, we could not load enough tracks with lyrics to play offline
-      </div>
-    );
-
-  if (!isLoaded || !gameItem) return <Loading />;
-
-  // throw error?
-  if (!currentTrackID) return null;
+  if (errorMessage) return <div className="my-12 text-center text-xl">{errorMessage}</div>;
+  if (!isPlayable) return <div className="my-12 text-center text-xl">Sorry, the game could not be loaded.</div>;
+  if (!isLoaded) return <Loading />;
+  if (!currentTrackID || !gameItem) {
+    console.error("No current track ID or game item", { currentTrackID, gameItem });
+    throw new Error("No current track ID or game item");
+  }
 
   const OfflineButton = () => {
     let Icon: IconType = MdOutlineDownloadForOffline;
