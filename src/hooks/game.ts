@@ -247,6 +247,7 @@ export function useGame(
     if (needsToFetch) {
       setIsLyricsLoading(true);
       fetchLyrics(tracksWithoutLyrics);
+      console.log("Fetching lyrics");
     }
 
     setTrackOrder(shuffledTrackIds);
@@ -255,6 +256,7 @@ export function useGame(
 
     if (canStart) {
       // Start with the first track that has lyrics
+      console.log("Starting game straight away");
       startWithFirstTrackWithLyrics(shuffledTrackIds);
     }
   };
@@ -265,15 +267,19 @@ export function useGame(
       startWithFirstTrackWithLyrics(trackOrder);
       setIsLyricsLoading(false);
     }
-  }, [trackMap, isLyricsLoading, trackOrder]);
+  }, [trackMap]);
 
   const startWithFirstTrackWithLyrics = (trackOrder: string[]) => {
     const index = findIndexWithLyrics(trackOrder);
-    if (!trackOrder[index] || index === -1) return;
+    setIsLoaded(true);
+    if (!trackOrder[index] || index === -1) {
+      setErrorMessage("No tracks with lyrics found");
+      setIsPlayable(false);
+      return;
+    }
 
     setCurrentTrackIndex(index);
     setLyricStartLine(chooseLyricLine(trackOrder[index]));
-    setIsLoaded(true);
   };
 
   const chooseLyricLine = (trackID: string) => {

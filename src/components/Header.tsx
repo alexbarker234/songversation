@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { FaCog } from "react-icons/fa";
 
 export default function Header() {
   const text = "songversation.";
@@ -26,6 +27,12 @@ export default function Header() {
           {environment}
         </span>
       )}
+      <Link
+        href="/settings"
+        className="absolute right-4 text-black opacity-50 transition-all hover:rotate-90 hover:scale-110 hover:opacity-100 active:scale-90"
+      >
+        <FaCog size={24} />
+      </Link>
     </nav>
   );
 }
