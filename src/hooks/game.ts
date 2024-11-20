@@ -327,7 +327,7 @@ export function useGame(
     let newIndex = startIndex;
     while (newIndex < trackOrder.length) {
       const trackId = trackOrder[newIndex];
-      if (!trackId || (trackMap[trackId] && !trackHasLyrics(trackMap[trackId]))) {
+      if (!trackId || (trackMap[trackId] && trackHasLyrics(trackMap[trackId]))) {
         return newIndex;
       }
       newIndex++;
