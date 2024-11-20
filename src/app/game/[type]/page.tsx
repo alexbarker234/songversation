@@ -7,3 +7,8 @@ export default function PlaylistSearch({ params }: { params: { type: string } })
 
   return <SearchPage type={type} />;
 }
+
+export async function generateMetadata({ params }: { params: { type: string } }) {
+  const capitalisedType = params.type.charAt(0).toUpperCase() + params.type.slice(1);
+  return { title: `Songversation - ${capitalisedType} Search` };
+}

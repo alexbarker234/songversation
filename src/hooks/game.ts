@@ -182,7 +182,7 @@ export function useGame(
   id: string,
   isDataReady: boolean,
   isOfflineReady: boolean,
-  fetchLyrics: (trackIds: string[]) => void
+  fetchLyrics: (trackIds: string[]) => Promise<void>
 ) {
   // Loading state
   const [isPlayable, setIsPlayable] = useState(true);
