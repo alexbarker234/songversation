@@ -115,7 +115,7 @@ export default function Game({ type, id }: GameProps) {
 
   return (
     <>
-      <div className="mb-1 mt-4 flex items-center justify-center text-center text-3xl">
+      <div className="mb-1 mt-8 flex items-center justify-center text-center text-2xl md:mt-4 md:text-3xl">
         <div>
           Which <span className="font-semibold">{gameItem.name}</span> song is this?
         </div>

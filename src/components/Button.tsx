@@ -1,3 +1,4 @@
+import { cn } from "@/utils/cn";
 import { cva, VariantProps } from "class-variance-authority";
 
 const buttonVariants = cva(
@@ -28,7 +29,7 @@ interface ButtonProps extends VariantProps<typeof buttonVariants> {
 
 export default function Button({ children, onClick, className, disabled, variant }: ButtonProps) {
   return (
-    <button onClick={onClick} className={buttonVariants({ variant, className })} disabled={disabled}>
+    <button onClick={onClick} className={cn(buttonVariants({ variant }), className)} disabled={disabled}>
       {children}
     </button>
   );

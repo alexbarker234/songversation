@@ -10,12 +10,12 @@ export default function ItemTiles({ items, isLoading }: { items: SpotifyItem[]; 
     );
 
   return (
-    <div className="items-container mt-4 flex w-full flex-wrap content-center justify-center gap-4 md:grid md:grid-cols-[repeat(auto-fit,_minmax(13rem,_2fr))]">
+    <div className="mb-20 mt-4 flex w-full flex-wrap content-center justify-center gap-4 md:mb-0 md:grid md:grid-cols-[repeat(auto-fit,_minmax(13rem,_2fr))]">
       {items.length > 0 &&
         items.map((item, index) => (
           <div
             key={item.id}
-            className="item-box h-68 relative flex w-48 animate-fade-drop-in flex-col items-center overflow-hidden opacity-0 transition-opacity duration-200"
+            className="h-68 relative flex w-48 animate-fade-drop-in flex-col items-center overflow-hidden opacity-0 transition-opacity duration-200"
             style={{ animationDelay: `${index * 0.05}s` }}
           >
             <a href={`/game/artist/${item.id}`}>

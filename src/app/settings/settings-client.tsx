@@ -38,6 +38,14 @@ export default function SettingsPage() {
         </Button>
       </div>
 
+      <div className="mt-6 rounded-lg bg-grey p-6">
+        <h2 className="mb-4 text-xl font-semibold">About</h2>
+        <p className="mb-4 text-gray-400">Check out the code on GitHub!</p>
+        <a href="https://github.com/alexbarker234/songversation" target="_blank" rel="noreferrer">
+          <Button variant="bordered">View on GitHub</Button>
+        </a>
+      </div>
+
       <Modal isOpen={showConfirmModal} onClose={() => !isClearing && setShowConfirmModal(false)}>
         <div className="max-w-lg rounded-lg bg-grey-dark p-6 text-center text-white">
           <h2 className="mb-4 text-2xl font-bold">Clear Local Data?</h2>

@@ -1,6 +1,7 @@
 "use client";
 import SearchBox from "@/components/searchBox";
 import { useSearch } from "@/hooks/search";
+import { useWindowSize } from "@/hooks/windowSize";
 import { useEffect, useState } from "react";
 import ItemTiles from "./ItemTiles";
 
@@ -8,6 +9,8 @@ export default function SearchPage({ type }: { type: "artist" | "playlist" }) {
   const [query, setQuery] = useState("");
   const [isURL, setIsURL] = useState(false);
   const { data, isLoading, isError } = useSearch({ query: query, type, disabled: isURL });
+
+  const { width } = useWindowSize();
 
   useEffect(() => {
     function extractSpotifyId(url: string) {
@@ -31,10 +34,11 @@ export default function SearchPage({ type }: { type: "artist" | "playlist" }) {
     if (!data) return <></>;
     return <ItemTiles items={data} isLoading={isLoading} />;
   };
-  const text =
-    type === "artist"
-      ? "Search for an artist or paste a link (https://open.spotify.com/artist/xxxxxxx)..."
-      : "Search for a public playlist or paste a link (https://open.spotify.com/playlist/xxxxxxx)...";
+  let text =
+    type === "artist" ? "Search for an artist or paste a link" : "Search for a public playlist or paste a link";
+
+  if (width > 768) text += " (https://open.spotify.com/artist/xxxxxxx)...";
+
   return (
     <>
       <SearchBox runSearch={setQuery} placeholder={text} />
