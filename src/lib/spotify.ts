@@ -360,7 +360,15 @@ const filterAlbums = (albums: Album[]) => {
 };
 
 const filterTracks = (tracks: Track[]) => {
-  const excludeList = ["live", "demo", "remix", "instrumental", "mix", "early version", "alternate"];
+  const excludeList = ["live", "demo", "remix", "instrumental", "mix", "early version", "alternate", "spotify singles"];
+
+  // slow reverb filter
+  tracks = tracks.filter(
+    (track) =>
+      !["slow", "slowed", "slowed down"].some(
+        (word) => track.name.toLowerCase().includes(word) && track.name.toLowerCase().includes("reverb")
+      )
+  );
 
   return tracks.filter((track) => {
     const lowercaseName = track.name.toLowerCase();

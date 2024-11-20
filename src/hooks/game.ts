@@ -180,12 +180,15 @@ export function useGame(
   isDataReady: boolean,
   fetchLyrics: (trackIds: string[]) => void
 ) {
+  // Loading state
+  const [isPlayable, setIsPlayable] = useState(true);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Data state
   const [lyricDisplay, setLyricDisplay] = useState<string[]>(["", "", ""]);
   const [score, setScore] = useState<number>(0);
-  const [isLoaded, setIsLoaded] = useState(false);
   const [isGameFinished, setGameFinished] = useState(false);
   const [trackOrder, setTrackOrder] = useState<string[]>([]);
-  const [isPlayable, setIsPlayable] = useState(true);
   const [currentTrackIndex, setCurrentTrackIndex] = useState<number>(0);
 
   useEffect(() => {
