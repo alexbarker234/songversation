@@ -360,7 +360,17 @@ const filterAlbums = (albums: Album[]) => {
 };
 
 const filterTracks = (tracks: Track[]) => {
-  const excludeList = ["live", "demo", "remix", "instrumental", "mix", "early version", "alternate", "spotify singles"];
+  const excludeList = [
+    "live",
+    "demo",
+    "remix",
+    "instrumental",
+    "mix",
+    "early version",
+    "alternate",
+    "spotify singles",
+    "acoustic"
+  ];
 
   // slow reverb filter
   tracks = tracks.filter(
