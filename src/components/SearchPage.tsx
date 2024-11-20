@@ -26,7 +26,7 @@ export default function SearchPage({ type }: { type: "artist" | "playlist" }) {
   }, [query]);
 
   const Results = () => {
-    if (!data && query !== "") return <div className="text-center text-white">No results found</div>;
+    if (!data && query !== "" && !isLoading) return <div className="text-center text-white">No results found</div>;
     if (isError) return <div className="text-center text-6xl text-red-500">!</div>;
     if (!data) return <></>;
     return <ItemTiles items={data} isLoading={isLoading} />;

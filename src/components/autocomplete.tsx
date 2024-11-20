@@ -37,7 +37,9 @@ export default function Autocomplete({ options, selected, className, setSelected
   useClickOutside([inputRef, resultsListRef], handleBlur, isMenuOpen);
 
   useEffect(() => {
-    setFilteredOptions(options.filter((option) => option.label.toLowerCase().includes(searchText.toLowerCase())));
+    setFilteredOptions(
+      options.filter((option) => option.label.toLowerCase().includes(searchText.toLowerCase())).slice(0, 10)
+    );
   }, [searchText, options]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

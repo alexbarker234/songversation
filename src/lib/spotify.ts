@@ -1,6 +1,55 @@
 import { Album, Artist, SpotifyItem, Track } from "@/types";
 import querystring from "querystring";
 
+interface SearchResponse {
+  artists: {
+    items: SpotifyArtistItem[];
+  };
+  playlists: {
+    items: SpotifyPlaylistItem[];
+  };
+}
+
+interface SpotifyAlbumTracksResponse {
+  items: SpotifyTrackItem[];
+  next: string | null;
+}
+interface SpotifyArtistAlbumsResponse {
+  items: SpotifyAlbumItem[];
+  next: string | null;
+}
+interface SpotifyPlaylistTrackItem {
+  track: SpotifyTrackItem;
+}
+interface SpotifyTrackItem {
+  id: string;
+  name: string;
+  artists: SpotifyTrackArtist[];
+  album: SpotifyAlbumItem;
+}
+interface SpotifyAlbumItem {
+  id: string;
+  name: string;
+  images: SpotifyImage[];
+}
+interface SpotifyArtistItem {
+  id: string;
+  name: string;
+  images: SpotifyImage[];
+}
+interface SpotifyPlaylistItem {
+  id: string;
+  name: string;
+  images: SpotifyImage[];
+}
+
+interface SpotifyImage {
+  url: string;
+}
+interface SpotifyTrackArtist {
+  name: string;
+}
+
 const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
 const CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
 
@@ -154,11 +203,7 @@ const fetchArtistAlbums = async (access_token: string, artistID: string) => {
   const end = Date.now();
   console.log(`Fetched albums for artist ${artistID} in: ${end - start} ms`);
 
-  // the most stupid regex to filter out covers, remmixes, etc
-  albums = albums.filter((album) => {
-    const regex = /[\[\(].* ?(?:Rework|Remix|Version|Acoustic|Acapella|Unplugged|Live|Instrumental)[\]\)]/i;
-    return !regex.test(album.name) && album.name.toLowerCase() !== "spotify singles";
-  });
+  albums = filterAlbums(albums);
 
   return albums;
 };
@@ -194,6 +239,8 @@ const fetchTracksFromAlbumList = async (access_token: string, albums: Album[]) =
   });
   const end = Date.now();
   console.log(`Fetched tracks for ${albums.length} albums in: ${end - start} ms`);
+
+  tracks = filterTracks(tracks);
 
   // remove duplicates
   const uniqueNames = new Set<string>();
@@ -289,51 +336,34 @@ export const fetchTracksByIDs = async (trackIDs: string[]) => {
   }
 };
 
-interface SearchResponse {
-  artists: {
-    items: SpotifyArtistItem[];
-  };
-  playlists: {
-    items: SpotifyPlaylistItem[];
-  };
-}
+const filterAlbums = (albums: Album[]) => {
+  const excludedTerms = [
+    "rework",
+    "remix",
+    "version",
+    "acoustic",
+    "acapella",
+    "unplugged",
+    "live",
+    "instrumental",
+    "spotify singles"
+  ];
 
-interface SpotifyAlbumTracksResponse {
-  items: SpotifyTrackItem[];
-  next: string | null;
-}
-interface SpotifyArtistAlbumsResponse {
-  items: SpotifyAlbumItem[];
-  next: string | null;
-}
-interface SpotifyPlaylistTrackItem {
-  track: SpotifyTrackItem;
-}
-interface SpotifyTrackItem {
-  id: string;
-  name: string;
-  artists: SpotifyTrackArtist[];
-  album: SpotifyAlbumItem;
-}
-interface SpotifyAlbumItem {
-  id: string;
-  name: string;
-  images: SpotifyImage[];
-}
-interface SpotifyArtistItem {
-  id: string;
-  name: string;
-  images: SpotifyImage[];
-}
-interface SpotifyPlaylistItem {
-  id: string;
-  name: string;
-  images: SpotifyImage[];
-}
+  return albums.filter((album) => {
+    const name = album.name.toLowerCase();
 
-interface SpotifyImage {
-  url: string;
-}
-interface SpotifyTrackArtist {
-  name: string;
-}
+    const hasBrackets = name.includes("[") || name.includes("(");
+    if (!hasBrackets) return true;
+
+    return !excludedTerms.some((term) => name.includes(term));
+  });
+};
+
+const filterTracks = (tracks: Track[]) => {
+  const excludeList = ["live", "demo", "remix", "instrumental", "mix", "early version", "alternate"];
+
+  return tracks.filter((track) => {
+    const lowercaseName = track.name.toLowerCase();
+    return !excludeList.some((term) => lowercaseName.includes(term));
+  });
+};
