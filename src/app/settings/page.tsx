@@ -35,7 +35,7 @@ export default function SettingsPage() {
       </div>
 
       <Modal isOpen={showConfirmModal} onClose={() => !isClearing && setShowConfirmModal(false)}>
-        <div className="w-[448px] rounded-lg bg-grey-dark p-6 text-center text-white">
+        <div className="max-w-lg rounded-lg bg-grey-dark p-6 text-center text-white">
           <h2 className="mb-4 text-2xl font-bold">Clear Local Data?</h2>
           <p className="mb-6 text-gray-400">
             This will remove all cached songs & lyrics. This does not affect high scores.
