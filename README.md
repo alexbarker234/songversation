@@ -1,12 +1,16 @@
 # Songversation - A NextJS port of our CITS3403 Flask Project
-https://songversation.vercel.app/
+A Spotify-powered lyric guessing game where players test their music knowledge by identifying songs from their lyrics. Challenge yourself with tracks from your favorite artists or explore public playlists!
 
-A lyric guessing game - powered by NextJS
 ## Current Features
-- Search a spotify artist and guess the song from a random set of lyrics
+- Search and play with any Spotify artist's discography
+- Test your knowledge with public Spotify playlists
+- Progressive Web App (PWA) capabilities:
+  - Offline gameplay support
+  - Downloadable for mobile and desktop
+  - Cache songs and lyrics for offline access
+- High score tracking for each artist/playlist
 
 ## Future Features
-- Filter out songs with the same lyrics (acoustics, remixes, etc) that aren't caught by current filter
 - Playlist search
 - User Log in 
     - Previous game stats
