@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "A Spotify based lyric guessing game",
     start_url: "/",
     display: "standalone",
-    background_color: "#000000",
-    theme_color: "#000000",
+    background_color: "#09090b",
+    theme_color: "#09090b",
     icons: [
       {
         src: "/icon-192x192.png",
