@@ -371,7 +371,8 @@ const filterTracks = (tracks: Track[]) => {
     "early version",
     "alternate",
     "spotify singles",
-    "acoustic"
+    "acoustic",
+    "reprise"
   ];
 
   // slow reverb filter

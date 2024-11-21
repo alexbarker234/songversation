@@ -1,9 +1,9 @@
 "use client";
+import ItemTiles from "@/components/ItemTiles";
 import SearchBox from "@/components/searchBox";
 import { useSearch } from "@/hooks/search";
 import { useWindowSize } from "@/hooks/windowSize";
 import { useEffect, useState } from "react";
-import ItemTiles from "./ItemTiles";
 
 export default function SearchPage({ type }: { type: "artist" | "playlist" }) {
   const [query, setQuery] = useState("");
@@ -19,10 +19,10 @@ export default function SearchPage({ type }: { type: "artist" | "playlist" }) {
     }
 
     if (query.startsWith("https://open.spotify.com/")) {
-      const extractedData = extractSpotifyId(query);
+      const extractedId = extractSpotifyId(query);
       setIsURL(true);
-      if (extractedData) {
-        const { type, id } = extractedData;
+      if (extractedId) {
+        const { type, id } = extractedId;
         window.location.assign(`/game/${type}/${id}`);
       }
     }
@@ -41,6 +41,7 @@ export default function SearchPage({ type }: { type: "artist" | "playlist" }) {
 
   return (
     <>
+      <h1 className="mt-6 text-center text-3xl font-bold">{type.charAt(0).toUpperCase() + type.slice(1)} Search</h1>
       <SearchBox runSearch={setQuery} placeholder={text} />
       <Results />
     </>

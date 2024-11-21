@@ -1,0 +1,16 @@
+import { useEffect, useState } from "react";
+
+export const useStandalone = () => {
+  const [isIOS, setIsIOS] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
+
+  useEffect(() => {
+    setIsIOS(/iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream);
+
+    setIsStandalone(window.matchMedia("(display-mode: standalone)").matches);
+  }, []);
+
+  console.log({ isIOS, isStandalone });
+
+  return { isIOS, isStandalone };
+};

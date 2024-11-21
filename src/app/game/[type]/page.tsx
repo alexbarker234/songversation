@@ -1,5 +1,5 @@
-import SearchPage from "@/components/SearchPage";
 import { notFound } from "next/navigation";
+import SearchPage from "./SearchPage";
 
 export default function PlaylistSearch({ params }: { params: { type: string } }) {
   const { type } = params;

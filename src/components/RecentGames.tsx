@@ -24,7 +24,7 @@ export default function RecentGames() {
   const sortedItems = savedGameItems.sort((a, b) => (a.lastPlayed && b.lastPlayed ? b.lastPlayed - a.lastPlayed : -1));
 
   return (
-    <div className="mx-auto max-w-lg p-6">
+    <div className="mx-auto mb-12 max-w-lg p-6">
       <h1 className="mb-6 text-center text-2xl font-semibold">Recent Games</h1>
 
       <div className="mb-4 flex justify-center gap-4">
