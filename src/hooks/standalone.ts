@@ -10,7 +10,5 @@ export const useStandalone = () => {
     setIsStandalone(window.matchMedia("(display-mode: standalone)").matches);
   }, []);
 
-  console.log({ isIOS, isStandalone });
-
   return { isIOS, isStandalone };
 };

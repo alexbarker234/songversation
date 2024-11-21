@@ -209,7 +209,13 @@ function FinishModal({
   return (
     <Modal isOpen={isOpen}>
       {isHighscore && isOpen && (
-        <Confetti className="absolute left-0 top-0 h-full w-full" width={width} numberOfPieces={100} />
+        <Confetti
+          className="pointer-events-none absolute left-0 top-0 h-full w-full"
+          width={width}
+          numberOfPieces={300}
+          recycle={false}
+          tweenDuration={20000}
+        />
       )}
       <div className="mx-auto w-11/12 max-w-[448px] overflow-hidden rounded-lg bg-grey-dark p-6 text-center text-white shadow-lg">
         <img
