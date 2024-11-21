@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 
 interface ModalProps {
   isOpen: boolean;
@@ -7,26 +7,30 @@ interface ModalProps {
 }
 
 export default function Modal({ isOpen, children, onClose }: ModalProps) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
+  // Handle clicking outside the modal
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget && onClose) {
+      onClose();
+    }
+  };
 
+  // Handle escape keys
   useEffect(() => {
-    const dialog = dialogRef.current;
+    const handleEscape = (e: KeyboardEvent) => {
+      if (isOpen && e.key === "Escape" && onClose) {
+        onClose();
+      }
+    };
 
-    if (isOpen) {
-      dialog?.showModal();
-    } else {
-      dialog?.close();
-    }
-
-    if (onClose) {
-      dialog?.addEventListener("close", onClose);
-      return () => dialog?.removeEventListener("close", onClose);
-    }
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
   }, [isOpen, onClose]);
 
+  if (!isOpen) return null;
+
   return (
-    <dialog ref={dialogRef} onCancel={(e) => e.preventDefault()} className="bg-transparent backdrop:bg-black/70">
-      {children}
-    </dialog>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70" onClick={handleBackdropClick}>
+      <div className="bg-transparent">{children}</div>
+    </div>
   );
 }

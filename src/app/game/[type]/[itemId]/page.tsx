@@ -1,7 +1,7 @@
 import { getArtist, getPlaylist } from "@/lib/spotify";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import Game from "../../game";
+import Game from "./game";
 
 export default async function GamePage({ params }: { params: { type: string; itemId: string } }) {
   const { type, itemId } = params;

@@ -1,5 +1,6 @@
 "use client";
 
+import Loading from "@/app/loading";
 import Autocomplete, { AutocompleteOption } from "@/components/autocomplete";
 import Button from "@/components/Button";
 import DebugTrackList from "@/components/DebugTrackList";
@@ -7,6 +8,7 @@ import FieldInfoHover from "@/components/InfoHover";
 import Modal from "@/components/modal";
 import { useGame, useGameData } from "@/hooks/game";
 import { useOfflineGameData } from "@/hooks/offlineGameData";
+import { useWindowSize } from "@/hooks/windowSize";
 import { getScore } from "@/lib/localScoreManager";
 import { Track } from "@/types";
 import { cn } from "@/utils/cn";
@@ -15,7 +17,6 @@ import { useEffect, useState } from "react";
 import Confetti from "react-confetti";
 import { IconType } from "react-icons";
 import { MdDownloadForOffline, MdOutlineDownloadForOffline } from "react-icons/md";
-import Loading from "../loading";
 
 interface GameProps {
   type: "playlist" | "artist";
@@ -194,6 +195,7 @@ function FinishModal({
 }) {
   const router = useRouter();
   const [highScore, setHighScore] = useState<number | null>(null);
+  const { width, height } = useWindowSize();
 
   useEffect(() => {
     setHighScore(getScore(type, id));
@@ -207,7 +209,7 @@ function FinishModal({
   return (
     <Modal isOpen={isOpen}>
       {isHighscore && isOpen && (
-        <Confetti className="absolute left-0 top-0 h-full w-full" width={472} numberOfPieces={50} />
+        <Confetti className="absolute left-0 top-0 h-full w-full" width={width} numberOfPieces={100} />
       )}
       <div className="mx-auto w-11/12 max-w-[448px] overflow-hidden rounded-lg bg-grey-dark p-6 text-center text-white shadow-lg">
         <img
