@@ -1,6 +1,6 @@
 "use client";
 import Button from "@/components/Button";
-import Modal from "@/components/modal";
+import Modal from "@/components/Modal";
 import { db } from "@/db/db";
 import { useState } from "react";
 

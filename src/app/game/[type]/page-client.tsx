@@ -1,6 +1,6 @@
 "use client";
 import ItemTiles from "@/components/ItemTiles";
-import SearchBox from "@/components/searchBox";
+import SearchBox from "@/components/SearchBox";
 import { useSearch } from "@/hooks/search";
 import { useWindowSize } from "@/hooks/windowSize";
 import { useEffect, useState } from "react";

@@ -1,11 +1,11 @@
 "use client";
 
 import Loading from "@/app/loading";
-import Autocomplete, { AutocompleteOption } from "@/components/autocomplete";
+import Autocomplete, { AutocompleteOption } from "@/components/Autocomplete";
 import Button from "@/components/Button";
 import DebugTrackList from "@/components/DebugTrackList";
 import FieldInfoHover from "@/components/InfoHover";
-import Modal from "@/components/modal";
+import Modal from "@/components/Modal";
 import { useGame, useGameData } from "@/hooks/game";
 import { useOfflineGameData } from "@/hooks/offlineGameData";
 import { useWindowSize } from "@/hooks/windowSize";

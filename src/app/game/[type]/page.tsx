@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import SearchPage from "./SearchPage";
+import SearchPage from "./page-client";
 
 export default function PlaylistSearch({ params }: { params: { type: string } }) {
   const { type } = params;
