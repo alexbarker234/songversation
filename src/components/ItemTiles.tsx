@@ -1,14 +1,6 @@
 import { SpotifyItem } from "@/types";
-import Loading from "./Loading";
 
-export default function ItemTiles({ items, isLoading }: { items: SpotifyItem[]; isLoading: boolean }) {
-  if (isLoading)
-    return (
-      <div className="mt-4 flex w-full justify-center">
-        <Loading className="mx-auto" />
-      </div>
-    );
-
+export default function ItemTiles({ items }: { items: SpotifyItem[] }) {
   return (
     <div className="mb-20 mt-4 flex w-full flex-wrap content-center justify-center gap-4 md:mb-0 md:grid md:grid-cols-[repeat(auto-fit,_minmax(13rem,_2fr))]">
       {items.length > 0 &&

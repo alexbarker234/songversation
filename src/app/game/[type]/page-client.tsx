@@ -34,7 +34,7 @@ export default function SearchPage({ type }: { type: "artist" | "playlist" }) {
     if (isError) return <div className="text-center text-6xl text-red-500">!</div>;
     if (isLoading) return <Loading className="my-auto" />;
     if (!data) return <></>;
-    return <ItemTiles items={data} isLoading={isLoading} />;
+    return <ItemTiles items={data} />;
   };
   let text =
     type === "artist" ? "Search for an artist or paste a link" : "Search for a public playlist or paste a link";
