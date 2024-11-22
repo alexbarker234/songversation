@@ -1,5 +1,6 @@
 "use client";
 import ItemTiles from "@/components/ItemTiles";
+import Loading from "@/components/Loading";
 import SearchBox from "@/components/SearchBox";
 import { useSearch } from "@/hooks/query/useSearch";
 import { useWindowSize } from "@/hooks/useWindowSize";
@@ -31,6 +32,7 @@ export default function SearchPage({ type }: { type: "artist" | "playlist" }) {
   const Results = () => {
     if (!data && query !== "" && !isLoading) return <div className="text-center text-white">No results found</div>;
     if (isError) return <div className="text-center text-6xl text-red-500">!</div>;
+    if (isLoading) return <Loading className="my-auto" />;
     if (!data) return <></>;
     return <ItemTiles items={data} isLoading={isLoading} />;
   };
