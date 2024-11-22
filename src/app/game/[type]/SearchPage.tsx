@@ -37,7 +37,7 @@ export default function SearchPage({ type }: { type: "artist" | "playlist" }) {
   let text =
     type === "artist" ? "Search for an artist or paste a link" : "Search for a public playlist or paste a link";
 
-  if (width > 768) text += " (https://open.spotify.com/artist/xxxxxxx)...";
+  if (width > 768) text += ` (https://open.spotify.com/${type}/xxxxxxx)...`;
 
   return (
     <>
