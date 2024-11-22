@@ -1,4 +1,4 @@
-import { getArtist, getPlaylist } from "@/lib/spotify";
+import { getArtist, getPlaylist } from "@/lib/spotifyService";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Game from "./game";

@@ -1,4 +1,4 @@
-import { getArtist, getArtistSongs, getPlaylist, getPlaylistTracks } from "@/lib/spotify";
+import { getArtist, getArtistSongs, getPlaylist, getPlaylistTracks } from "@/lib/spotifyService";
 import { DetailedSpotifyItem } from "@/types";
 import { NextResponse } from "next/server";
 

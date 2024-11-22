@@ -1,4 +1,4 @@
-import { getArtistSongs, getPlaylistTracks } from "@/lib/spotify";
+import { getArtistSongs, getPlaylistTracks } from "@/lib/spotifyService";
 import { NextResponse } from "next/server";
 
 export async function GET(req: Request, { params }: { params: { type: string; id: string } }) {

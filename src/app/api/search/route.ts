@@ -1,4 +1,4 @@
-import { searchSpotify } from "@/lib/spotify";
+import { searchSpotify } from "@/lib/spotifyService";
 import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
