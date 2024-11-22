@@ -1,6 +1,6 @@
 import { TrackMap } from "@/types";
 import { cn } from "@/utils/cn";
-import { trackHasLyrics } from "@/utils/track";
+import { trackHasLyrics } from "@/utils/trackUtils";
 import { useState } from "react";
 import { FaCaretLeft, FaCaretRight } from "react-icons/fa";
 

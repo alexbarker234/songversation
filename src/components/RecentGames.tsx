@@ -3,7 +3,7 @@
 import { db } from "@/lib/db";
 import { GameItem } from "@/types";
 import { cn } from "@/utils/cn";
-import { capitaliseFirstLetter } from "@/utils/utils";
+import { capitaliseFirstLetter } from "@/utils/stringUtils";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import Button from "./Button";

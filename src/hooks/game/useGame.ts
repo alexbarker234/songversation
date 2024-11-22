@@ -1,9 +1,31 @@
 import { saveScore } from "@/lib/localScoreManager";
 import { TrackMap } from "@/types";
+import { shuffleArray } from "@/utils/arrayUtils";
 import { randBetween } from "@/utils/mathUtils";
-import { trackHasLyrics } from "@/utils/track";
-import { shuffleArray } from "@/utils/utils";
+import { trackHasLyrics } from "@/utils/trackUtils";
 import { useEffect, useState } from "react";
+
+/**
+ * Hook to manage game state and logic for the lyric guessing game.
+ * Handles track loading, scoring, game progression, and offline functionality.
+ *
+ * @param trackMap - Map of track IDs to track objects containing lyrics and metadata
+ * @param type - Type of game being played ('playlist' or 'artist')
+ * @param id - ID of the playlist or artist
+ * @param isDataReady - Whether initial game data has been loaded
+ * @param isOfflineReady - Whether all required data is cached for offline play
+ * @param fetchLyrics - Function to fetch lyrics for given track IDs
+ * @returns Object containing:
+ *  - isPlayable: Whether the game is in a playable state
+ *  - isLoaded: Whether game data has finished loading
+ *  - lyricStartLine: Current starting line number for displayed lyrics
+ *  - score: Current game score
+ *  - isGameFinished: Whether the game has ended
+ *  - trackOrder: Array of track IDs in play order
+ *  - currentTrackIndex: Index of current track being played
+ *  - errorMessage: Error message if game cannot be played
+ *  - isLyricsLoading: Whether lyrics are currently being fetched
+ */
 
 export function useGame(
   trackMap: TrackMap,

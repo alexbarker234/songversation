@@ -2,6 +2,20 @@ import { db } from "@/lib/db";
 import { GameItem, TrackMap } from "@/types";
 import { useEffect, useState } from "react";
 
+/**
+ * Hook to manage offline data for a game item.
+ * Handles fetching and storing lyrics for offline play, tracking progress, and managing offline state.
+ *
+ * @param gameItem - The game item (playlist/artist) to manage offline data for
+ * @param trackMap - Map of track IDs to track objects containing lyrics and metadata
+ * @param fetchLyrics - Function to fetch lyrics for given track IDs
+ * @returns Object containing:
+ *  - isLoading: Whether initial data is being loaded
+ *  - offlineEnabled: Whether offline mode is enabled for this game item
+ *  - offlineReady: Whether all required data is cached for offline play
+ *  - progress: Download progress (0-100) for offline data
+ *  - inProgress: Whether offline data is currently being fetched
+ */
 export const useOfflineGameData = (
   gameItem: GameItem | undefined,
   trackMap: TrackMap,

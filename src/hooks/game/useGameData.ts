@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { DetailedSpotifyItem, GameItem, LyricMap, Track, TrackMap } from "@/types";
-import { trackHasLyrics } from "@/utils/track";
+import { trackHasLyrics } from "@/utils/trackUtils";
 import { useQuery } from "@tanstack/react-query";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useState } from "react";
@@ -29,6 +29,13 @@ const upsertTrackItem = async (track: Track) => {
   }
 };
 
+/**
+ * Hook to manage game data for a playlist or artist.
+ * Handles fetching game item, tracks, and updating the track map.
+ *
+ * @param type - Type of game being played ('playlist' or 'artist')
+ * @param id - ID of the playlist or artist
+ */
 export function useGameData(type: "playlist" | "artist", id: string) {
   const [trackMap, setTrackMap] = useState<TrackMap>({});
   const [isDataReady, setIsDataReady] = useState(false);
