@@ -1,6 +1,6 @@
 "use client";
 
-import { db } from "@/db/db";
+import { db } from "@/lib/db";
 import { GameItem } from "@/types";
 import { cn } from "@/utils/cn";
 import { capitaliseFirstLetter } from "@/utils/utils";

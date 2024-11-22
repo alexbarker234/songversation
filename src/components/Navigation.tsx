@@ -1,5 +1,5 @@
 "use client";
-import { useStandalone } from "@/hooks/standalone";
+import { useStandalone } from "@/hooks/useStandalone";
 import { cn } from "@/utils/cn";
 import Link from "next/link";
 import { usePathname } from "next/navigation";

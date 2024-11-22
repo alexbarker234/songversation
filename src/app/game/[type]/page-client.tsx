@@ -1,8 +1,8 @@
 "use client";
 import ItemTiles from "@/components/ItemTiles";
 import SearchBox from "@/components/SearchBox";
-import { useSearch } from "@/hooks/search";
-import { useWindowSize } from "@/hooks/windowSize";
+import { useSearch } from "@/hooks/query/useSearch";
+import { useWindowSize } from "@/hooks/useWindowSize";
 import { useEffect, useState } from "react";
 
 export default function SearchPage({ type }: { type: "artist" | "playlist" }) {

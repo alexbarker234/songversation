@@ -1,4 +1,4 @@
-import { db } from "@/db/db";
+import { db } from "@/lib/db";
 import { GameItem, TrackMap } from "@/types";
 import { useEffect, useState } from "react";
 

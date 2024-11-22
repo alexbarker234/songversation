@@ -1,5 +1,5 @@
 "use client";
-import { useClickOutside } from "@/hooks/clickOutside";
+import { useClickOutside } from "@/hooks/useClickOutside";
 import { cn } from "@/utils/cn";
 import { useEffect, useRef, useState } from "react";
 

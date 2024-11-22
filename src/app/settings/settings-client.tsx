@@ -1,7 +1,7 @@
 "use client";
 import Button from "@/components/Button";
 import Modal from "@/components/Modal";
-import { db } from "@/db/db";
+import { db } from "@/lib/db";
 import { useState } from "react";
 
 export const metadata = {
