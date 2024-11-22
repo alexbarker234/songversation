@@ -26,7 +26,7 @@ const TopNav = ({ isStandalone }: { isStandalone: boolean }) => {
   return (
     <nav
       className={cn(
-        "group relative flex h-14 items-center justify-center text-3xl font-bold text-white transition-all md:h-14 md:translate-y-0",
+        "group relative flex h-14 items-center justify-center overflow-hidden text-3xl font-bold text-white transition-all md:h-14 md:translate-y-0",
         {
           "h-0": pathname !== "/" && isStandalone
         }
