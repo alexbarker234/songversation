@@ -1,10 +1,10 @@
 "use client";
 
-import Loading from "@/app/loading";
 import Autocomplete, { AutocompleteOption } from "@/components/Autocomplete";
 import Button from "@/components/Button";
 import DebugTrackList from "@/components/DebugTrackList";
 import FieldInfoHover from "@/components/InfoHover";
+import Loading from "@/components/Loading";
 import Modal from "@/components/Modal";
 import { useGame } from "@/hooks/game/useGame";
 import { useGameData } from "@/hooks/game/useGameData";
@@ -91,7 +91,7 @@ export default function Game({ type, id }: GameProps) {
 
   if (errorMessage) return <div className="my-12 text-center text-xl">{errorMessage}</div>;
   if (!isPlayable) return <div className="my-12 text-center text-xl">Sorry, the game could not be loaded.</div>;
-  if (!isLoaded) return <Loading />;
+  if (!isLoaded) return <Loading className="my-auto" />;
   if (!currentTrackID || !gameItem) {
     console.error("No current track ID or game item", { currentTrackID, gameItem });
     throw new Error("No current track ID or game item");

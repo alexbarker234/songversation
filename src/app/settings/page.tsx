@@ -1,4 +1,4 @@
-import SettingsClient from "./settings-client";
+import SettingsClient from "./page-client";
 
 export const metadata = {
   title: "Songversation - Settings"

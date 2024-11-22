@@ -1,11 +1,11 @@
-import Loading from "@/app/loading";
 import { SpotifyItem } from "@/types";
+import Loading from "./Loading";
 
 export default function ItemTiles({ items, isLoading }: { items: SpotifyItem[]; isLoading: boolean }) {
   if (isLoading)
     return (
       <div className="mt-4 flex w-full justify-center">
-        <Loading style={{ margin: "auto" }} />
+        <Loading className="mx-auto" />
       </div>
     );
 
