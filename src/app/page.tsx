@@ -1,14 +1,18 @@
 "use client";
+import Logo from "@/components/Logo";
 import RecentGames from "@/components/RecentGames";
 import useOnline from "@/hooks/useOnline";
+import { useStandalone } from "@/hooks/useStandalone";
 import { cn } from "@/utils/cn";
 import Link from "next/link";
 
 export default function Home() {
   const isOnline = useOnline();
-
+  const { isStandalone } = useStandalone();
   return (
     <div>
+      {isStandalone && <Logo />}
+
       <div className="relative mx-auto mt-4 flex w-11/12 max-w-5xl flex-wrap justify-center">
         <MenuTile
           href="/game/artist"

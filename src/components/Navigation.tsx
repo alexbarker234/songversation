@@ -2,9 +2,9 @@
 import { useStandalone } from "@/hooks/useStandalone";
 import { cn } from "@/utils/cn";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { BsPersonFill, BsStack } from "react-icons/bs";
 import { FaCog, FaHome } from "react-icons/fa";
+import Logo from "./Logo";
 
 export default function Navigation() {
   const { isStandalone } = useStandalone();
@@ -17,45 +17,16 @@ export default function Navigation() {
   );
 }
 const TopNav = ({ isStandalone }: { isStandalone: boolean }) => {
-  let environment = "";
-  if (process.env.NODE_ENV === "development") environment = "local";
-  else if (process.env.NEXT_PUBLIC_ENVIRONMENT === "dev") environment = "dev";
-
-  const pathname = usePathname();
-
   return (
     <nav
-      className={cn(
-        "group relative flex h-14 shrink-0 items-center justify-center overflow-hidden text-3xl font-bold text-white transition-all md:h-14 md:translate-y-0",
-        {
-          "h-0": pathname !== "/" && isStandalone
-        }
-      )}
+      className={cn("relative flex shrink-0 items-center justify-center overflow-hidden text-white", {
+        hidden: isStandalone
+      })}
     >
-      <Link href="/" className="p-2">
-        {"songversation.".split("").map((char, index) => (
-          <span
-            key={index}
-            className="inline-block group-hover:animate-hop"
-            style={{ animationDelay: `${index * 0.05}s` }}
-          >
-            {char}
-          </span>
-        ))}
-      </Link>
-      {environment && (
-        <span className="pointer-events-none absolute -bottom-1 left-1/2 -translate-x-1/2 text-sm font-bold">
-          {environment}
-        </span>
-      )}
+      <Logo />
       <Link
         href="/settings"
-        className={cn(
-          "absolute right-4 opacity-50 transition-all hover:rotate-90 hover:scale-110 hover:opacity-100 active:scale-90",
-          {
-            hidden: isStandalone
-          }
-        )}
+        className="absolute right-4 opacity-50 transition-all hover:rotate-90 hover:scale-110 hover:opacity-100 active:scale-90"
       >
         <FaCog size={24} />
       </Link>
