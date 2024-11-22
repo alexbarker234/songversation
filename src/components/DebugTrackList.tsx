@@ -20,13 +20,13 @@ function DebugTrackList({
 
   return (
     <div
-      className={`fixed right-0 top-0 flex h-svh w-64 transform flex-col bg-gray-800 p-4 text-white transition-transform duration-300 ease-in-out ${
+      className={`fixed right-0 top-0 flex h-full w-64 transform flex-col bg-gray-800 p-4 text-white transition-transform duration-300 ease-in-out ${
         isMinimized ? "translate-x-full" : "translate-x-0"
       }`}
     >
       <button
         onClick={() => setIsMinimized(!isMinimized)}
-        className="absolute right-full top-4 rounded-l-md bg-gray-800 p-2 px-1 font-bold text-white"
+        className="absolute right-full top-12 rounded-l-md bg-gray-800 p-2 px-1 font-bold text-white"
       >
         {isMinimized ? <FaCaretLeft /> : <FaCaretRight />}
       </button>
