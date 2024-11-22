@@ -1,5 +1,5 @@
 // TRACK
-interface Track {
+export interface Track {
   id: string;
   artist: string;
   name: string;
@@ -7,17 +7,15 @@ interface Track {
   lyrics?: string[];
   hasFetchedLyrics?: boolean;
 }
-interface TrackMap {
-  [key: string]: Track;
-}
+export type TrackMap = Record<string, Track>;
 // ALBUM
-interface Album {
+export interface Album {
   id: string;
   name: string;
   imageURL: string;
 }
 // ARTIST
-interface Artist {
+export interface Artist {
   id: string;
   name: string;
   imageURL: string;
@@ -25,21 +23,40 @@ interface Artist {
 
 // MISC
 
-interface SpotifyItem {
+export interface DetailedSpotifyItem {
+  id: string;
+  name: string;
+  imageURL: string;
+  tracks: Track[];
+}
+
+export interface SpotifyItem {
   id: string;
   name: string;
   imageURL: string;
 }
+
+export interface GameItem {
+  id: string;
+  name: string;
+  imageURL: string;
+  type: "playlist" | "artist";
+  trackIds: string[];
+  lastPlayed?: number;
+  offlineEnabled?: boolean;
+  offlineReady?: boolean;
+}
+
 // LYRIC
-interface LyricMap {
+export interface LyricMap {
   [key: string]: string[];
 }
 // USER
-interface UserData {
+export interface UserData {
   name: string;
 }
 
-interface TrackInfo {
+export interface TrackInfo {
   id: string;
   artist: string;
   title: string;

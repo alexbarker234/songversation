@@ -1,3 +1,4 @@
+import { cn } from "@/utils/cn";
 import { cva, VariantProps } from "class-variance-authority";
 
 const buttonVariants = cva(
@@ -8,7 +9,9 @@ const buttonVariants = cva(
         default: "",
         bordered: "border-2 border-grey-light",
         green: "bg-primary ",
-        grey: "bg-grey "
+        grey: "bg-grey ",
+        "grey-light": "bg-grey-light",
+        danger: "bg-red-950 text-red-500 hover:bg-red-900"
       }
     },
     defaultVariants: {
@@ -26,7 +29,7 @@ interface ButtonProps extends VariantProps<typeof buttonVariants> {
 
 export default function Button({ children, onClick, className, disabled, variant }: ButtonProps) {
   return (
-    <button onClick={onClick} className={buttonVariants({ variant, className })} disabled={disabled}>
+    <button onClick={onClick} className={cn(buttonVariants({ variant }), className)} disabled={disabled}>
       {children}
     </button>
   );

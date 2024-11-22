@@ -1,6 +1,33 @@
 {
   "extends": "next/core-web-vitals",
+  "plugins": ["validate-filename"],
   "rules": {
-    "@next/next/no-img-element": "off"
+    "@next/next/no-img-element": "off",
+    "react-hooks/exhaustive-deps": "off",
+    "validate-filename/naming-rules": [
+      "error",
+      {
+        "rules": [
+          {
+            "case": "pascal",
+            "target": "**/components/**"
+          },
+          {
+            "case": "kebab",
+            "target": "**/app/**"
+          },
+          {
+            "case": "camel",
+            "target": "**/hooks/**",
+            "patterns": "^use"
+          },
+          {
+            "case": "camel",
+            "target": "**/providers/**",
+            "patterns": "^[a-zA-Z]*Provider"
+          }
+        ]
+      }
+    ]
   }
 }

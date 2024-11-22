@@ -1,4 +1,6 @@
+import { TrackMap } from "@/types";
 import { cn } from "@/utils/cn";
+import { trackHasLyrics } from "@/utils/trackUtils";
 import { useState } from "react";
 import { FaCaretLeft, FaCaretRight } from "react-icons/fa";
 
@@ -18,13 +20,13 @@ function DebugTrackList({
 
   return (
     <div
-      className={`fixed right-0 top-0 flex h-svh w-64 transform flex-col bg-gray-800 p-4 text-white transition-transform duration-300 ease-in-out ${
+      className={`fixed right-0 top-0 flex h-full w-64 transform flex-col bg-gray-800 p-4 text-white transition-transform duration-300 ease-in-out ${
         isMinimized ? "translate-x-full" : "translate-x-0"
       }`}
     >
       <button
         onClick={() => setIsMinimized(!isMinimized)}
-        className="absolute right-full top-4 rounded-l-md bg-gray-800 p-2 px-1 font-bold text-white"
+        className="absolute right-full top-12 rounded-l-md bg-gray-800 p-2 px-1 font-bold text-white"
       >
         {isMinimized ? <FaCaretLeft /> : <FaCaretRight />}
       </button>
@@ -33,17 +35,15 @@ function DebugTrackList({
       <div className="mb-8 flex flex-col gap-2 overflow-y-auto">
         {trackOrder.map((trackID, index) => {
           const track = trackMap[trackID];
-          let borderColor;
-          if (track.hasFetchedLyrics) {
-            borderColor = track.lyrics ? "border-green-500" : "border-red-500";
-          } else {
-            borderColor = "border-yellow-500";
-          }
-
+          if (!track) return null;
           return (
             <div
               key={track.id}
-              className={cn("flex flex-col rounded-md border-2 p-2", borderColor, {
+              className={cn("flex flex-col rounded-md border-2 p-2", {
+                "border-green-500": track.hasFetchedLyrics && trackHasLyrics(track),
+                "border-red-500": track.hasFetchedLyrics && !trackHasLyrics(track), // No lyrics found
+                "border-yellow-500": !track.hasFetchedLyrics, // Not fetched
+                "border-blue-500": trackHasLyrics(track) && !track.hasFetchedLyrics, // Cached
                 "bg-primary font-bold": index === currentTrackIndex
               })}
             >

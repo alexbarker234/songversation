@@ -1,4 +1,4 @@
-import { useClickOutside } from "@/hooks/clickOutside";
+import { useClickOutside } from "@/hooks/useClickOutside";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { FaInfoCircle } from "react-icons/fa";
 

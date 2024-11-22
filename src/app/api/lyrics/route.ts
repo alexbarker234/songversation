@@ -1,4 +1,5 @@
-import { getMultipleLyrics } from "@/lib/lyrics";
+import { getMultipleLyrics } from "@/lib/lyricsService";
+import { TrackInfo } from "@/types";
 import { NextResponse } from "next/server";
 
 function isValidTrackDataList(trackDataList: any): trackDataList is TrackInfo[] {
