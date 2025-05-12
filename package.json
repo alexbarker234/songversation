@@ -23,6 +23,7 @@
     "gsap": "^3.12.5",
     "next": "14.2.16",
     "next-transition-router": "^0.2.5",
+    "peerjs": "^1.5.4",
     "react": "^18",
     "react-confetti": "^6.1.0",
     "react-dom": "^18",
