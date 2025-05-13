@@ -1,29 +1,35 @@
 "use client";
 
-import { Data, DataType, PeerConnection } from "@/utils/peerUtils";
+import { Data, PeerConnection } from "@/utils/peerUtils";
 import { useEffect, useRef, useState } from "react";
 import { FaCopy } from "react-icons/fa";
 
 interface ConnectionMessage {
-  type: "connect-request";
-  name: string;
+  messageType: "connect-request";
+  message: {
+    name: string;
+  };
 }
 interface ConnectionResponseMessage {
-  type: "connect-response";
-  name: string;
+  messageType: "connect-response";
+  message: {
+    name: string;
+  };
 }
 
 interface GenericMessage {
-  type: "message";
+  messageType: "message";
   message: string;
 }
 
 interface ScoreMessage {
-  type: "score-update";
-  score: number;
+  messageType: "score-update";
+  message: {
+    score: number;
+  };
 }
 
-type Message = ConnectionMessage | ConnectionResponseMessage | GenericMessage | ScoreMessage;
+type GameMessage = ConnectionMessage | ConnectionResponseMessage | GenericMessage | ScoreMessage;
 
 export default function MultiplayerTest() {
   const [myPeerId, setMyPeerId] = useState<string>("");
@@ -35,7 +41,7 @@ export default function MultiplayerTest() {
   const [peerScore, setPeerScore] = useState<number>(0);
 
   // is this good practice? TODO: improve?
-  const handleMessageRef = useRef<(targetPeerId: string, data: Data) => void>(() => {});
+  const handleMessageRef = useRef<(targetPeerId: string, data: GameMessage) => void>(() => {});
 
   useEffect(() => {
     // Start peer session when component mounts
@@ -47,7 +53,7 @@ export default function MultiplayerTest() {
         setTargetPeerId(conn.peer);
         setIsConnected(true);
         PeerConnection.onConnectionReceiveData(conn.peer, async (data: Data) =>
-          handleMessageRef.current(conn.peer, data)
+          handleMessageRef.current(conn.peer, data as GameMessage)
         );
       });
     });
@@ -67,16 +73,15 @@ export default function MultiplayerTest() {
       await PeerConnection.connectPeer(targetPeerId);
       setIsConnected(true);
       PeerConnection.onConnectionReceiveData(targetPeerId, (data: Data) =>
-        handleMessageRef.current(targetPeerId, data)
+        handleMessageRef.current(targetPeerId, data as GameMessage)
       );
 
       // Send username to the peer
       await PeerConnection.sendConnection(targetPeerId, {
-        dataType: DataType.OTHER,
-        message: JSON.stringify({
-          type: "connect-request",
+        messageType: "connect-request",
+        message: {
           name: userName
-        })
+        }
       });
     } catch (err) {
       console.error("Failed to connect:", err);
@@ -85,34 +90,31 @@ export default function MultiplayerTest() {
 
   // Handle Messages, ensure that it updates with state
   useEffect(() => {
-    handleMessageRef.current = async (targetPeerId: string, data: Data) => {
+    handleMessageRef.current = async (targetPeerId: string, data: GameMessage) => {
       console.log("Received message:", data.message);
-      if (data.dataType === DataType.OTHER && data.message) {
-        const message = JSON.parse(data.message) as Message;
-
+      if (data.message) {
         // Handle Connection Request
-        if (message.type === "connect-request") {
-          console.log("Received connect request:", message.name);
-          const incomingPeerName = message.name;
+        if (data.messageType === "connect-request") {
+          console.log("Received connect request:", data.message.name);
+          const incomingPeerName = data.message.name;
           setPeerName(incomingPeerName);
           await PeerConnection.sendConnection(targetPeerId, {
-            dataType: DataType.OTHER,
-            message: JSON.stringify({
-              type: "connect-response",
+            messageType: "connect-response",
+            message: {
               name: userName
-            })
+            }
           });
         }
 
         // Handle Connection Response
-        else if (message.type === "connect-response") {
-          console.log("Received connect response:", message.name);
-          setPeerName(message.name);
+        else if (data.messageType === "connect-response") {
+          console.log("Received connect response:", data.message.name);
+          setPeerName(data.message.name);
         }
 
         // Handle Score Update
-        else if (message.type === "score-update") {
-          setPeerScore(message.score);
+        else if (data.messageType === "score-update") {
+          setPeerScore(data.message.score);
         }
       }
     };
@@ -125,11 +127,10 @@ export default function MultiplayerTest() {
       const newScore = myScore + 1;
       setMyScore(newScore);
       await PeerConnection.sendConnection(targetPeerId, {
-        dataType: DataType.OTHER,
-        message: JSON.stringify({
-          type: "score-update",
+        messageType: "score-update",
+        message: {
           score: newScore
-        })
+        }
       });
     } catch (err) {
       console.error("Failed to send score update:", err);

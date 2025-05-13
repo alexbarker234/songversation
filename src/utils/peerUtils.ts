@@ -2,16 +2,9 @@ import Peer, { DataConnection, PeerError, PeerErrorType } from "peerjs";
 
 // Adapted from https://github.com/chidokun/p2p-file-transfer/blob/main/src/helpers/peer.ts
 
-export enum DataType {
-  FILE = "FILE",
-  OTHER = "OTHER"
-}
 export interface Data {
-  dataType: DataType;
-  file?: Blob;
-  fileName?: string;
-  fileType?: string;
-  message?: string;
+  messageType: string;
+  message: any;
 }
 
 let peer: Peer | undefined;
