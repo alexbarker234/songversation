@@ -3,8 +3,8 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Game from "./game";
 
-export default async function GamePage({ params }: { params: { type: string; itemId: string; mode: string } }) {
-  const { type, itemId, mode } = params;
+export default async function GamePage({ params }: { params: { type: string; mode: string; itemId: string } }) {
+  const { type, mode, itemId } = params;
 
   if (type != "artist" && type != "playlist") return notFound();
   if (mode != "singleplayer" && mode != "multiplayer") return notFound();

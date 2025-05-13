@@ -4,11 +4,13 @@ import Loading from "@/components/Loading";
 import SearchBox from "@/components/SearchBox";
 import { useSearch } from "@/hooks/query/useSearch";
 import { useWindowSize } from "@/hooks/useWindowSize";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function SearchPage({ type }: { type: "artist" | "playlist" }) {
   const [query, setQuery] = useState("");
   const [isURL, setIsURL] = useState(false);
+  const pathname = usePathname();
   const { data, isLoading, isError } = useSearch({ query: query, type, disabled: isURL });
 
   const { width } = useWindowSize();
@@ -29,12 +31,14 @@ export default function SearchPage({ type }: { type: "artist" | "playlist" }) {
     }
   }, [query]);
 
+  if (!pathname) return <></>;
+
   const Results = () => {
-    if (!data && query !== "" && !isLoading) return <div className="text-center text-white">No results found</div>;
     if (isError) return <div className="text-center text-6xl text-red-500">!</div>;
+    if (!data && query !== "" && !isLoading) return <div className="text-center text-white">No results found</div>;
     if (isLoading) return <Loading className="my-auto" />;
     if (!data) return <></>;
-    return <ItemTiles items={data} />;
+    return <ItemTiles items={data} baseURL={pathname} />;
   };
   let text =
     type === "artist" ? "Search for an artist or paste a link" : "Search for a public playlist or paste a link";

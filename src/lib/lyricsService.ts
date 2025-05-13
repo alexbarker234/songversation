@@ -14,7 +14,7 @@ export async function getLyrics(artist: string, title: string) {
     }
     const data = await response.json();
 
-    return formatLyrics(data.lyrics);
+    return formatLyrics(data.lyrics, artist);
   } catch (error: unknown) {
     if (error instanceof Error) {
       throw new Error(`An error occurred while fetching lyrics: ${error.message}`);
@@ -50,18 +50,26 @@ export const getMultipleLyrics = async (tracks: TrackInfo[]) => {
     if (!tracks[index]) return;
 
     const { artist, title, id } = tracks[index];
-    if (response) lyricMap[id] = formatLyrics(response.lyrics);
+    if (response) lyricMap[id] = formatLyrics(response.lyrics, artist);
   });
 
   return lyricMap;
 };
 
-const formatLyrics = (plainlyrics: string) => {
+const formatLyrics = (plainlyrics: string, artistName: string) => {
   plainlyrics = plainlyrics.replace(/\r/g, "");
   let lyrics = plainlyrics.split("\n");
   // todo figure out why the API returns this sometimes
   lyrics = lyrics.filter((line) => !line.includes("Paroles de la chanson"));
   lyrics = lyrics.filter((line) => line.trim() !== "");
+
+  // Filter out lines that mention the artist name
+  // example, songs with multiple singers sometimes have who is singing as a lyric line
+  const artistNameLower = artistName.toLowerCase();
+  lyrics = lyrics.filter((line) => {
+    const lineLower = line.toLowerCase();
+    return !lineLower.includes(artistNameLower);
+  });
 
   return lyrics;
 };

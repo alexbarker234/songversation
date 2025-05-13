@@ -269,12 +269,14 @@ export const searchSpotify = async (
     headers: { Authorization: `Bearer ${access_token}` },
     next: { revalidate: 6000 }
   }).then((res) => res.json());
-
   const items = type === "artist" ? response.artists?.items : response.playlists?.items;
 
-  if (!items) return;
+  // Filter out null or undefined items - why does it even return these
+  const filteredItems = items?.filter((item) => item !== null && item !== undefined) || [];
 
-  return items.map((item) => ({
+  if (!filteredItems) return;
+
+  return filteredItems.map((item) => ({
     name: item.name,
     id: item.id,
     imageURL: item.images[0]?.url || ""
