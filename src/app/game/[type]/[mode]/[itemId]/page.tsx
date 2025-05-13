@@ -3,14 +3,15 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Game from "./game";
 
-export default async function GamePage({ params }: { params: { type: string; itemId: string } }) {
-  const { type, itemId } = params;
+export default async function GamePage({ params }: { params: { type: string; itemId: string; mode: string } }) {
+  const { type, itemId, mode } = params;
 
   if (type != "artist" && type != "playlist") return notFound();
+  if (mode != "singleplayer" && mode != "multiplayer") return notFound();
 
-  // const item = type === "playlist" ? await getPlaylist(itemId) : await getArtist(itemId);
-
-  // if (!item) redirect("/game/artist");
+  if (mode == "multiplayer") {
+    return <>beans</>;
+  }
 
   return (
     <>
