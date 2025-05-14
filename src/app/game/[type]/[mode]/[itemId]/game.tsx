@@ -87,7 +87,8 @@ export default function Game({ type, id, seed, onScoreUpdate }: GameProps) {
   };
 
   const restart = () => {
-    loadGame();
+    // TODO multiplayer checks
+    loadGame(seed);
     setSelected(null);
   };
 
@@ -118,10 +119,7 @@ export default function Game({ type, id, seed, onScoreUpdate }: GameProps) {
   };
 
   return (
-    <div className="mt-6">
-      <div className="flex w-full justify-center">
-        <PlayerScoreCard name="Beanoiddasdasd" score={0} />
-      </div>
+    <div className="">
       <div className="mb-1 mt-2 flex items-center justify-center text-center text-2xl md:mt-4 md:text-3xl">
         <div>
           Which <span className="font-semibold">{gameItem.name}</span> song is this?
@@ -164,15 +162,6 @@ export default function Game({ type, id, seed, onScoreUpdate }: GameProps) {
         id={id}
       />
       <DebugTrackList trackMap={trackMap} trackOrder={trackOrder} currentTrackIndex={currentTrackIndex} />
-    </div>
-  );
-}
-
-function PlayerScoreCard({ score, name }: { score: number; name: string }) {
-  return (
-    <div className="flex aspect-square w-1/5 flex-col items-center justify-center rounded-lg bg-grey px-1">
-      <div className="w-full overflow-hidden text-ellipsis whitespace-nowrap text-sm text-white">{name}</div>
-      <div className="mt-1 font-bold text-green-400">{score}</div>
     </div>
   );
 }
