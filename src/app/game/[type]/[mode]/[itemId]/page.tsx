@@ -2,6 +2,7 @@ import { getArtist, getPlaylist } from "@/lib/spotifyService";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Game from "./game";
+import MultiplayerGame from "./multiplayer";
 
 export default async function GamePage({ params }: { params: { type: string; mode: string; itemId: string } }) {
   const { type, mode, itemId } = params;
@@ -10,14 +11,10 @@ export default async function GamePage({ params }: { params: { type: string; mod
   if (mode != "singleplayer" && mode != "multiplayer") return notFound();
 
   if (mode == "multiplayer") {
-    return <>beans</>;
+    return <MultiplayerGame type={type} id={itemId} />;
   }
 
-  return (
-    <>
-      <Game type={type} id={itemId} />
-    </>
-  );
+  return <Game type={type} id={itemId} />;
 }
 
 export async function generateMetadata({ params }: { params: { type: string; itemId: string } }): Promise<Metadata> {

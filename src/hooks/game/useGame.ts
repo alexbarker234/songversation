@@ -3,7 +3,7 @@ import { TrackMap } from "@/types";
 import { shuffleArray } from "@/utils/arrayUtils";
 import { randBetween } from "@/utils/mathUtils";
 import { trackHasLyrics } from "@/utils/trackUtils";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /**
  * Hook to manage game state and logic for the lyric guessing game.
@@ -52,6 +52,8 @@ export function useGame(
   // Add new state to track lyrics loading
   const [isLyricsLoading, setIsLyricsLoading] = useState(false);
 
+  const seedRef = useRef<string | undefined>(undefined);
+
   useEffect(() => {
     setIsPlayable(true);
   }, [trackMap]);
@@ -60,10 +62,11 @@ export function useGame(
   useEffect(() => {
     if (!isDataReady || trackOrder.length != 0) return;
     console.log("Starting game");
-    loadGame();
+    loadGame(seedRef.current);
   }, [isDataReady]);
 
-  const loadGame = () => {
+  const loadGame = (seed?: string) => {
+    seedRef.current = seed;
     let shuffledTrackIds: string[] = [];
 
     // Tracks with lyrics or tracks that haven't had lyrics fetched
@@ -86,7 +89,7 @@ export function useGame(
     }
 
     shuffledTrackIds = [...availableTrackIds];
-    shuffleArray(shuffledTrackIds);
+    shuffleArray(shuffledTrackIds, seedRef.current);
 
     // Fetch the first 10 that don't already have lyrics
     const tracksWithoutLyrics = shuffledTrackIds.filter((id) => !trackMap[id]?.hasFetchedLyrics).slice(0, 10);
@@ -137,7 +140,7 @@ export function useGame(
   const chooseLyricLine = (trackID: string) => {
     const track = trackMap[trackID];
     if (!track || !track.lyrics) return 0;
-    return randBetween(0, track.lyrics.length - 3);
+    return randBetween(0, track.lyrics.length - 3, seedRef.current);
   };
 
   // Add a helper function to get current lyrics

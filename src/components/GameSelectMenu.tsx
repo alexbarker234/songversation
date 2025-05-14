@@ -24,7 +24,7 @@ export function GameSelectMenu({ isOnline }: GameMenuProps) {
             <MenuTile
               onClick={() => setGameMode("multiplayer")}
               title="👥 Multiplayer"
-              description="Play with friends!"
+              description="Play with a friend!"
               disabled={!isOnline}
             />
           </div>
