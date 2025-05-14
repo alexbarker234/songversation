@@ -56,7 +56,7 @@ export default function Game({ type, id, seed, onScoreUpdate }: GameProps) {
     loadGame,
     submit,
     finishGame
-  } = useGame(trackMap, type, id, isDataReady, offlineReady, fetchLyrics);
+  } = useGame(trackMap, type, id, isDataReady, offlineReady, fetchLyrics, seed, onScoreUpdate);
 
   const autocompleteOptions = Object.keys(trackMap).map((key) => ({
     label: `${trackMap[key]?.artist} - ${trackMap[key]?.name}`,

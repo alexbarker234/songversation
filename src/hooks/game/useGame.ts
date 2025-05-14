@@ -33,7 +33,9 @@ export function useGame(
   id: string,
   isDataReady: boolean,
   isOfflineReady: boolean,
-  fetchLyrics: (trackIds: string[]) => Promise<void>
+  fetchLyrics: (trackIds: string[]) => Promise<void>,
+  seed?: string,
+  onScoreUpdate?: (score: number) => void
 ) {
   // Loading state
   const [isPlayable, setIsPlayable] = useState(true);
@@ -107,7 +109,7 @@ export function useGame(
     setTrackOrder(shuffledTrackIds);
     setGameFinished(false);
     setScore(0);
-
+    onScoreUpdate?.(0);
     if (canStart) {
       // Start with the first track that has lyrics
       console.log("Starting game straight away");
@@ -154,7 +156,9 @@ export function useGame(
 
   const submit = (trackId: string) => {
     if (trackOrder[currentTrackIndex] === trackId) {
-      setScore(score + 1);
+      const newScore = score + 1;
+      setScore(newScore);
+      onScoreUpdate?.(newScore);
       chooseNewSong();
     } else {
       finishGame();

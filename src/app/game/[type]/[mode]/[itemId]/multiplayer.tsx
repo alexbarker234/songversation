@@ -50,7 +50,7 @@ export default function MultiplayerGame({ type, id }: MultiplayerGameProps) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleScoreUpdate = (score: number) => {
+  const onScoreUpdate = (score: number) => {
     sendScore(score);
   };
 
@@ -138,7 +138,7 @@ export default function MultiplayerGame({ type, id }: MultiplayerGameProps) {
       <div className="mt-2 flex h-16 w-full justify-center">
         <PlayerScoreCard name={peer.name} score={peer.score} />
       </div>
-      <Game type={type} id={id} seed={seed} onScoreUpdate={handleScoreUpdate} />
+      <Game type={type} id={id} seed={seed} onScoreUpdate={onScoreUpdate} />
     </>
   );
 }
