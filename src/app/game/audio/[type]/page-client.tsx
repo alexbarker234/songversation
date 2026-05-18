@@ -6,7 +6,7 @@ import { useSearch } from "@/hooks/query/useSearch";
 import { useWindowSize } from "@/hooks/useWindowSize";
 import { useEffect, useState } from "react";
 
-export default function SearchPage({ type }: { type: "artist" | "playlist" }) {
+export default function AudioSearchPage({ type }: { type: "artist" | "playlist" }) {
   const [query, setQuery] = useState("");
   const [isURL, setIsURL] = useState(false);
   const { data, isLoading, isError } = useSearch({ query: query, type, disabled: isURL });
@@ -23,8 +23,8 @@ export default function SearchPage({ type }: { type: "artist" | "playlist" }) {
       const extractedId = extractSpotifyId(query);
       setIsURL(true);
       if (extractedId) {
-        const { type, id } = extractedId;
-        window.location.assign(`/game/${type}/${id}`);
+        const { type: spotifyType, id } = extractedId;
+        window.location.assign(`/game/audio/${spotifyType}/${id}`);
       }
     }
   }, [query]);
@@ -34,16 +34,19 @@ export default function SearchPage({ type }: { type: "artist" | "playlist" }) {
     if (isError) return <div className="text-center text-6xl text-red-500">!</div>;
     if (isLoading) return <Loading className="my-auto" />;
     if (!data) return <></>;
-    return <ItemTiles items={data} type={type} />;
+    return <ItemTiles items={data} gameBasePath="/game/audio" type={type} />;
   };
+
   let text =
-    type === "artist" ? "Search for an artist or paste a link" : "Search for a public playlist or paste a link";
+    type === "artist"
+      ? "Search for an artist or paste a link"
+      : "Search for a public playlist or paste a link";
 
   if (width > 768) text += ` (https://open.spotify.com/${type}/xxxxxxx)...`;
 
   return (
     <>
-      <h1 className="mt-6 text-center text-3xl font-bold">{type.charAt(0).toUpperCase() + type.slice(1)} Search</h1>
+      <h1 className="mt-6 text-center text-3xl font-bold">Audio {type.charAt(0).toUpperCase() + type.slice(1)} Quiz</h1>
       <SearchBox runSearch={setQuery} placeholder={text} />
       <Results />
     </>
