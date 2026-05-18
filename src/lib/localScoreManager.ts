@@ -26,7 +26,7 @@ export function saveScore(
   type: "artist" | "playlist",
   id: string,
   score: number,
-  mode: "lyrics" | "audio" = "lyrics"
+  mode: "lyric" | "audio" = "lyric"
 ): void {
   const highScores = getHighScores();
   const records = mode === "audio" ? highScores.records.audio[type] : highScores.records[type];
@@ -40,7 +40,7 @@ export function saveScore(
 export function getScore(
   type: "artist" | "playlist",
   id: string,
-  mode: "lyrics" | "audio" = "lyrics"
+  mode: "lyric" | "audio" = "lyric"
 ): number | null {
   const highScores = getHighScores();
   const records = mode === "audio" ? highScores.records.audio[type] : highScores.records[type];

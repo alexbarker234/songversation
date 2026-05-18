@@ -58,7 +58,7 @@ export interface PreviewMap {
   [key: string]: string;
 }
 
-export type GameMode = "lyrics" | "audio";
+export type GameMode = "lyric" | "audio";
 // USER
 export interface UserData {
   name: string;

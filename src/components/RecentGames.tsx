@@ -3,6 +3,7 @@
 import { db } from "@/lib/db";
 import { GameItem } from "@/types";
 import { cn } from "@/utils/cn";
+import { getGamePlayPath } from "@/utils/gameTypes";
 import { capitaliseFirstLetter } from "@/utils/stringUtils";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -70,7 +71,7 @@ const GameItemDisplay = ({ item }: { item: GameItem }) => {
         </div>
         <div className="mt-2 flex gap-2">
           <Link
-            href={`/game/${item.type}/${item.id}`}
+            href={getGamePlayPath(item.type, "lyric", item.id)}
             className={cn(
               "cursor-pointer rounded-lg bg-grey-light px-3 py-1 text-sm font-medium transition-colors hover:bg-primary hover:text-black",
               { "pointer-events-none cursor-not-allowed opacity-50": lyricsDisabled }
@@ -79,7 +80,7 @@ const GameItemDisplay = ({ item }: { item: GameItem }) => {
             Lyrics
           </Link>
           <Link
-            href={`/game/audio/${item.type}/${item.id}`}
+            href={getGamePlayPath(item.type, "audio", item.id)}
             className={cn(
               "cursor-pointer rounded-lg bg-grey-light px-3 py-1 text-sm font-medium transition-colors hover:bg-primary hover:text-black",
               { "pointer-events-none cursor-not-allowed opacity-50": audioDisabled }

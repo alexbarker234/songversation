@@ -4,14 +4,12 @@ import RecentGames from "@/components/RecentGames";
 import useOnline from "@/hooks/useOnline";
 import { useStandalone } from "@/hooks/useStandalone";
 import { cn } from "@/utils/cn";
+import { GameType, getGameSearchPath, SourceType } from "@/utils/gameTypes";
 import Link from "next/link";
 import { useState } from "react";
 
-type GameMode = "lyrics" | "audio";
-type SourceType = "artist" | "playlist";
-
-const modeOptions: { mode: GameMode; title: string; description: string; emoji: string }[] = [
-  { mode: "lyrics", title: "Lyrics", description: "Guess songs from lyric snippets", emoji: "📝" },
+const modeOptions: { mode: GameType; title: string; description: string; emoji: string }[] = [
+  { mode: "lyric", title: "Lyrics", description: "Guess songs from lyric snippets", emoji: "📝" },
   { mode: "audio", title: "Audio", description: "Guess songs from a 3-second clip", emoji: "🎧" }
 ];
 
@@ -20,14 +18,10 @@ const sourceOptions: { type: SourceType; title: string; description: string; emo
   { type: "playlist", title: "Playlist", description: "Songs from a public playlist", emoji: "▶️" }
 ];
 
-function getGameHref(mode: GameMode, type: SourceType) {
-  return mode === "audio" ? `/game/audio/${type}` : `/game/${type}`;
-}
-
 export default function Home() {
   const isOnline = useOnline();
   const { isStandalone } = useStandalone();
-  const [selectedMode, setSelectedMode] = useState<GameMode | null>(null);
+  const [selectedMode, setSelectedMode] = useState<GameType | null>(null);
 
   return (
     <div>
@@ -67,14 +61,14 @@ export default function Home() {
                 ← Back
               </button>
               <p className="text-center text-lg text-gray-400">
-                {selectedMode === "lyrics" ? "Lyrics" : "Audio"} — choose a source
+                {selectedMode === "lyric" ? "Lyrics" : "Audio"} — choose a source
               </p>
             </div>
             <div className="flex w-full flex-wrap justify-center gap-4">
               {sourceOptions.map(({ type, title, description, emoji }) => (
                 <MenuTile
                   key={type}
-                  href={getGameHref(selectedMode, type)}
+                  href={getGameSearchPath(type, selectedMode)}
                   title={`${emoji} ${title}`}
                   description={description}
                   disabled={!isOnline}
