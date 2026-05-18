@@ -1,25 +1,64 @@
-interface HighScoreRecord {
+export const HIGH_SCORE_VERSION = 1;
+
+type ScoreMap = { [key: string]: number };
+
+interface SourceScores {
+  artist: ScoreMap;
+  playlist: ScoreMap;
+}
+
+export interface HighScoreRecord {
+  version: number;
   records: {
-    artist: { [key: string]: number };
-    playlist: { [key: string]: number };
-    audio: {
-      artist: { [key: string]: number };
-      playlist: { [key: string]: number };
-    };
+    lyrics: SourceScores;
+    audio: SourceScores;
   };
+}
+
+function createDefaultHighScores(): HighScoreRecord {
+  return {
+    version: HIGH_SCORE_VERSION,
+    records: {
+      lyrics: { artist: {}, playlist: {} },
+      audio: { artist: {}, playlist: {} }
+    }
+  };
+}
+
+function isValidHighScoreRecord(parsed: unknown): parsed is HighScoreRecord {
+  if (!parsed || typeof parsed !== "object") return false;
+  const data = parsed as HighScoreRecord;
+  return (
+    data.version === HIGH_SCORE_VERSION &&
+    !!data.records?.lyrics?.artist &&
+    !!data.records?.lyrics?.playlist &&
+    !!data.records?.audio?.artist &&
+    !!data.records?.audio?.playlist
+  );
 }
 
 function getHighScores(): HighScoreRecord {
   const storedScores = localStorage.getItem("highScores");
-  const defaults = { records: { artist: {}, playlist: {}, audio: { artist: {}, playlist: {} } } };
-  if (!storedScores) return defaults;
-  const parsed = JSON.parse(storedScores) as HighScoreRecord;
-  if (!parsed.records.audio) parsed.records.audio = { artist: {}, playlist: {} };
-  return parsed;
+  if (!storedScores) return createDefaultHighScores();
+
+  try {
+    const parsed: unknown = JSON.parse(storedScores);
+    if (isValidHighScoreRecord(parsed)) return parsed;
+  } catch {
+    // fall through to defaults
+  }
+
+  return createDefaultHighScores();
 }
 
 function saveHighScores(highScores: HighScoreRecord): void {
+  highScores.version = HIGH_SCORE_VERSION;
   localStorage.setItem("highScores", JSON.stringify(highScores));
+}
+
+function getRecordsForMode(highScores: HighScoreRecord, mode: "lyric" | "audio", type: "artist" | "playlist") {
+  const modeRecords = mode === "audio" ? highScores.records.audio : highScores.records.lyrics;
+  return modeRecords[type];
 }
 
 export function saveScore(
@@ -29,7 +68,7 @@ export function saveScore(
   mode: "lyric" | "audio" = "lyric"
 ): void {
   const highScores = getHighScores();
-  const records = mode === "audio" ? highScores.records.audio[type] : highScores.records[type];
+  const records = getRecordsForMode(highScores, mode, type);
 
   if (!records[id] || score > records[id]) {
     records[id] = score;
@@ -43,7 +82,7 @@ export function getScore(
   mode: "lyric" | "audio" = "lyric"
 ): number | null {
   const highScores = getHighScores();
-  const records = mode === "audio" ? highScores.records.audio[type] : highScores.records[type];
+  const records = getRecordsForMode(highScores, mode, type);
   return records[id] || null;
 }
 
