@@ -1,16 +1,17 @@
 "use client";
+
 import ItemTiles from "@/components/ItemTiles";
 import Loading from "@/components/Loading";
 import SearchBox from "@/components/SearchBox";
 import { useSearch } from "@/hooks/query/useSearch";
 import { useWindowSize } from "@/hooks/useWindowSize";
+import { GameType, gameTypeLabel, SourceType } from "@/utils/gameTypes";
 import { useEffect, useState } from "react";
 
-export default function SearchPage({ type }: { type: "artist" | "playlist" }) {
+export default function GameSearchPage({ type, gameType }: { type: SourceType; gameType: GameType }) {
   const [query, setQuery] = useState("");
   const [isURL, setIsURL] = useState(false);
-  const { data, isLoading, isError } = useSearch({ query: query, type, disabled: isURL });
-
+  const { data, isLoading, isError } = useSearch({ query, type, disabled: isURL });
   const { width } = useWindowSize();
 
   useEffect(() => {
@@ -23,19 +24,20 @@ export default function SearchPage({ type }: { type: "artist" | "playlist" }) {
       const extractedId = extractSpotifyId(query);
       setIsURL(true);
       if (extractedId) {
-        const { type, id } = extractedId;
-        window.location.assign(`/game/${type}/${id}`);
+        const { type: spotifyType, id } = extractedId;
+        window.location.assign(`/game/${spotifyType}/${gameType}/${id}`);
       }
     }
-  }, [query]);
+  }, [query, gameType]);
 
   const Results = () => {
     if (!data && query !== "" && !isLoading) return <div className="text-center text-white">No results found</div>;
     if (isError) return <div className="text-center text-6xl text-red-500">!</div>;
     if (isLoading) return <Loading className="my-auto" />;
-    if (!data) return <></>;
-    return <ItemTiles items={data} />;
+    if (!data) return null;
+    return <ItemTiles items={data} sourceType={type} gameType={gameType} />;
   };
+
   let text =
     type === "artist" ? "Search for an artist or paste a link" : "Search for a public playlist or paste a link";
 
@@ -43,7 +45,9 @@ export default function SearchPage({ type }: { type: "artist" | "playlist" }) {
 
   return (
     <>
-      <h1 className="mt-6 text-center text-3xl font-bold">{type.charAt(0).toUpperCase() + type.slice(1)} Search</h1>
+      <h1 className="mt-6 text-center text-3xl font-bold">
+        {gameTypeLabel(gameType)} {type.charAt(0).toUpperCase() + type.slice(1)} Quiz
+      </h1>
       <SearchBox runSearch={setQuery} placeholder={text} />
       <Results />
     </>

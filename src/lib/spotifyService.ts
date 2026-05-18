@@ -8,6 +8,9 @@ interface SearchResponse {
   playlists: {
     items: SpotifyPlaylistItem[];
   };
+  tracks: {
+    items: SpotifyTrackItem[];
+  };
 }
 
 interface SpotifyAlbumTracksResponse {
@@ -261,14 +264,29 @@ const SEARCH_ENDPOINT = `https://api.spotify.com/v1/search`;
 
 export const searchSpotify = async (
   searchTerm: string,
-  type: "artist" | "playlist"
-): Promise<SpotifyItem[] | undefined> => {
+  type: "artist" | "playlist" | "track"
+): Promise<SpotifyItem[] | Track[] | undefined> => {
   const { access_token } = await getServerAccessToken();
 
-  const response: SearchResponse = await fetch(`${SEARCH_ENDPOINT}?q=${searchTerm}&type=${type}&limit=20`, {
-    headers: { Authorization: `Bearer ${access_token}` },
-    next: { revalidate: 6000 }
-  }).then((res) => res.json());
+  const response: SearchResponse = await fetch(
+    `${SEARCH_ENDPOINT}?q=${encodeURIComponent(searchTerm)}&type=${type}&limit=20`,
+    {
+      headers: { Authorization: `Bearer ${access_token}` },
+      next: { revalidate: 6000 }
+    }
+  ).then((res) => res.json());
+
+  if (type === "track") {
+    const items = response.tracks?.items;
+    if (!items) return;
+
+    return items.map((item) => ({
+      id: item.id,
+      name: item.name,
+      artist: item.artists[0]?.name ?? "",
+      imageURL: item.album.images[0]?.url ?? ""
+    }));
+  }
 
   const items = type === "artist" ? response.artists?.items : response.playlists?.items;
 

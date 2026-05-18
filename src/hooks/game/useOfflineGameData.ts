@@ -19,8 +19,10 @@ import { useEffect, useState } from "react";
 export const useOfflineGameData = (
   gameItem: GameItem | undefined,
   trackMap: TrackMap,
-  fetchLyrics: (trackIds: string[]) => void
+  fetchLyrics: (trackIds: string[]) => void,
+  options?: { enabled?: boolean }
 ) => {
+  const isEnabled = options?.enabled ?? true;
   const [isLoading, setIsLoading] = useState(false);
   const [offlineEnabled, setEnabled] = useState(false);
   const [offlineReady, setOfflineReady] = useState(false);
@@ -28,18 +30,19 @@ export const useOfflineGameData = (
   const [inProgress, setInProgress] = useState(false);
 
   useEffect(() => {
-    if (!gameItem) return;
+    if (!isEnabled || !gameItem) return;
     setIsLoading(false);
     setEnabled(gameItem.offlineEnabled ?? false);
     setOfflineReady(gameItem.offlineReady ?? false);
-  }, [gameItem]);
+  }, [gameItem, isEnabled]);
 
   useEffect(() => {
+    if (!isEnabled) return;
     updateProgress();
-  }, [trackMap]);
+  }, [trackMap, isEnabled]);
 
   useEffect(() => {
-    if (!offlineEnabled || !gameItem || inProgress || !Object.values(trackMap).length) return;
+    if (!isEnabled || !offlineEnabled || !gameItem || inProgress || !Object.values(trackMap).length) return;
 
     const fetchAllLyrics = async () => {
       setInProgress(true);
@@ -93,6 +96,15 @@ export const useOfflineGameData = (
     setEnabled(enabled);
     await db.gameItems.update(gameItem.id, { offlineEnabled: enabled });
   };
+
+  if (!isEnabled) {
+    return {
+      isLoading: false,
+      offlineReady: false,
+      offlineEnabled: false,
+      setOfflineEnabled: async () => {}
+    };
+  }
 
   return { isLoading, offlineReady, offlineEnabled, setOfflineEnabled };
 };

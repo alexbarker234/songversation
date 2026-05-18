@@ -1,5 +1,6 @@
 "use client";
 
+import AudioClipPlayer from "@/components/AudioClipPlayer";
 import Autocomplete, { AutocompleteOption } from "@/components/Autocomplete";
 import Button from "@/components/Button";
 import DebugTrackList from "@/components/DebugTrackList";
@@ -13,6 +14,7 @@ import { useWindowSize } from "@/hooks/useWindowSize";
 import { getScore } from "@/lib/localScoreManager";
 import { Track } from "@/types";
 import { cn } from "@/utils/cn";
+import { GameType, gameTypeLabel } from "@/utils/gameTypes";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Confetti from "react-confetti";
@@ -21,29 +23,29 @@ import { MdDownloadForOffline, MdOutlineDownloadForOffline } from "react-icons/m
 
 interface GameProps {
   type: "playlist" | "artist";
+  gameType: GameType;
   id: string;
 }
 
-export default function Game({ type, id }: GameProps) {
+export default function Game({ type, gameType, id }: GameProps) {
+  const isLyric = gameType === "lyric";
   const [selected, setSelected] = useState<AutocompleteOption | null>(null);
-  const { gameItem, isLoading, trackMap, fetchLyrics } = useGameData(type, id);
+  const { gameItem, isLoading, trackMap, fetchContent, playableTrackCount } = useGameData(type, id, gameType);
+
   const {
     isLoading: isOfflineLoading,
     offlineReady,
     offlineEnabled,
     setOfflineEnabled
-  } = useOfflineGameData(gameItem, trackMap, fetchLyrics);
+  } = useOfflineGameData(gameItem, trackMap, fetchContent, { enabled: isLyric });
 
-  useEffect(() => {
-    if (navigator.onLine) return;
-    console.log("You are offline");
-  }, []);
-
-  const isDataReady = !isLoading && !isOfflineLoading;
+  const isDataReady = !isLoading && (!isLyric || !isOfflineLoading);
 
   const {
     currentTrackID,
     lyricDisplay,
+    previewUrl,
+    clipKey,
     score,
     isGameFinished,
     isLoaded,
@@ -54,7 +56,7 @@ export default function Game({ type, id }: GameProps) {
     loadGame,
     submit,
     finishGame
-  } = useGame(trackMap, type, id, isDataReady, offlineReady, fetchLyrics);
+  } = useGame(trackMap, type, id, gameType, isDataReady, offlineReady, fetchContent);
 
   const autocompleteOptions = Object.keys(trackMap).map((key) => ({
     label: `${trackMap[key]?.artist} - ${trackMap[key]?.name}`,
@@ -70,14 +72,8 @@ export default function Game({ type, id }: GameProps) {
     };
 
     document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, [selected]);
-
-  const handleSubmitButton = () => {
-    if (selected) handleSubmit(selected?.id);
-  };
 
   const handleSubmit = (trackId: string) => {
     submit(trackId);
@@ -93,27 +89,16 @@ export default function Game({ type, id }: GameProps) {
   if (!isPlayable) return <div className="my-12 text-center text-xl">Sorry, the game could not be loaded.</div>;
   if (!isLoaded) return <Loading className="my-auto" />;
   if (!currentTrackID || !gameItem) {
-    console.error("No current track ID or game item", { currentTrackID, gameItem });
     throw new Error("No current track ID or game item");
   }
 
-  const OfflineButton = () => {
-    let Icon: IconType = MdOutlineDownloadForOffline;
-    if (offlineEnabled) Icon = MdDownloadForOffline;
+  const trackCountLabel = isLyric
+    ? `${Object.keys(trackMap).length} tracks loaded`
+    : `${playableTrackCount ?? 0} of ${Object.keys(trackMap).length} tracks have previews`;
 
-    return (
-      <Icon
-        size={30}
-        className={cn("text-gray-500 transition-all", {
-          "text-primary": offlineReady,
-          "hover:text-white": !offlineReady && offlineEnabled,
-          "cursor-pointer hover:scale-105": !offlineEnabled
-        })}
-        onClick={() => setOfflineEnabled(true)}
-        title={offlineReady ? "Offline Ready" : "Download Lyrics"}
-      />
-    );
-  };
+  const trackCountHint = isLyric
+    ? "Some tracks may not have lyrics, so will not be included in the game"
+    : "Some tracks may not have audio previews and will be skipped";
 
   return (
     <>
@@ -121,15 +106,24 @@ export default function Game({ type, id }: GameProps) {
         <div>
           Which <span className="font-semibold">{gameItem.name}</span> song is this?
         </div>
-        <OfflineButton />
+        {isLyric && (
+          <OfflineButton offlineReady={offlineReady} offlineEnabled={offlineEnabled} onEnable={() => setOfflineEnabled(true)} />
+        )}
       </div>
+
       <div className="flex w-full flex-col items-center text-center">
         <div className="flex items-center text-xs text-gray-500">
-          <span>{Object.keys(trackMap).length} tracks loaded</span>
-          <FieldInfoHover content="Some tracks may not have lyrics, so will not be included in the game" />
+          <span>{trackCountLabel}</span>
+          <FieldInfoHover content={trackCountHint} />
         </div>
-        <div className="flex items-center gap-2"></div>
-        <LyricBox lyricDisplay={lyricDisplay} trackId={currentTrackID} />
+
+        {isLyric && lyricDisplay ? (
+          <LyricBox lyricDisplay={lyricDisplay} trackId={currentTrackID} />
+        ) : (
+          <div className="mt-4 flex w-full max-w-5xl flex-col overflow-hidden rounded-lg bg-grey-dark px-4">
+            <AudioClipPlayer previewUrl={previewUrl} clipKey={clipKey} />
+          </div>
+        )}
       </div>
 
       <div className="bottom-0 flex w-full flex-col items-center justify-center bg-zinc-950 p-4 pb-10 md:fixed md:pb-4">
@@ -141,25 +135,63 @@ export default function Game({ type, id }: GameProps) {
         />
 
         <div className="mt-8 flex w-11/12 max-w-5xl justify-between">
-          <Button onClick={finishGame} variant="bordered">
+          <Button onClick={finishGame} variant="bordered" className="cursor-pointer disabled:cursor-not-allowed">
             Give Up
           </Button>
           <div className="mx-4 text-center text-6xl">{score}</div>
-          <Button variant="green" onClick={handleSubmitButton} disabled={selected === null}>
+          <Button
+            variant="green"
+            onClick={() => selected && handleSubmit(selected.id)}
+            disabled={selected === null}
+            className="cursor-pointer disabled:cursor-not-allowed"
+          >
             Submit
           </Button>
         </div>
       </div>
+
       <FinishModal
         isOpen={isGameFinished}
         score={score}
         finalTrack={trackMap[currentTrackID]}
         restart={restart}
         type={type}
+        gameType={gameType}
         id={id}
       />
-      <DebugTrackList trackMap={trackMap} trackOrder={trackOrder} currentTrackIndex={currentTrackIndex} />
+      <DebugTrackList
+        trackMap={trackMap}
+        trackOrder={trackOrder}
+        currentTrackIndex={currentTrackIndex}
+        mode={gameType === "lyric" ? "lyrics" : "audio"}
+      />
     </>
+  );
+}
+
+function OfflineButton({
+  offlineReady,
+  offlineEnabled,
+  onEnable
+}: {
+  offlineReady: boolean;
+  offlineEnabled: boolean;
+  onEnable: () => void;
+}) {
+  let Icon: IconType = MdOutlineDownloadForOffline;
+  if (offlineEnabled) Icon = MdDownloadForOffline;
+
+  return (
+    <Icon
+      size={30}
+      className={cn("text-gray-500 transition-all", {
+        "text-primary": offlineReady,
+        "hover:text-white": !offlineReady && offlineEnabled,
+        "cursor-pointer hover:scale-105": !offlineEnabled
+      })}
+      onClick={onEnable}
+      title={offlineReady ? "Offline Ready" : "Download Lyrics"}
+    />
   );
 }
 
@@ -185,6 +217,7 @@ function FinishModal({
   finalTrack,
   restart,
   type,
+  gameType,
   id
 }: {
   isOpen: boolean;
@@ -192,21 +225,21 @@ function FinishModal({
   finalTrack: Track | undefined;
   restart: () => void;
   type: "playlist" | "artist";
+  gameType: GameType;
   id: string;
 }) {
   const router = useRouter();
   const [highScore, setHighScore] = useState<number | null>(null);
-  const { width, height } = useWindowSize();
+  const { width } = useWindowSize();
 
   useEffect(() => {
-    setHighScore(getScore(type, id));
-
-    // Refresh whenever open is changed
-  }, [isOpen]);
+    setHighScore(getScore(type, id, gameType));
+  }, [isOpen, type, gameType, id]);
 
   if (!finalTrack) return null;
 
   const isHighscore = score === highScore && score != 0;
+
   return (
     <Modal isOpen={isOpen}>
       {isHighscore && isOpen && (
@@ -226,6 +259,7 @@ function FinishModal({
         />
 
         <h2 className="mb-1 text-2xl font-semibold">{finalTrack.name}</h2>
+        <p className="mb-4 text-sm text-gray-400">{gameTypeLabel(gameType)} quiz</p>
 
         <div className="mt-4 flex justify-center gap-4">
           <div className="rounded-lg bg-grey-light p-4 text-lg shadow-inner">
@@ -239,10 +273,10 @@ function FinishModal({
         </div>
 
         <div className="mt-8 flex justify-center gap-6">
-          <Button variant="green" onClick={restart}>
+          <Button variant="green" onClick={restart} className="cursor-pointer disabled:cursor-not-allowed">
             Play Again
           </Button>
-          <Button variant="bordered" onClick={() => router.push("/")}>
+          <Button variant="bordered" onClick={() => router.push("/")} className="cursor-pointer disabled:cursor-not-allowed">
             Return Home
           </Button>
         </div>

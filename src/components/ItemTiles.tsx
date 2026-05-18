@@ -1,6 +1,15 @@
 import { SpotifyItem } from "@/types";
+import { GameType, getGamePlayPath, SourceType } from "@/utils/gameTypes";
 
-export default function ItemTiles({ items }: { items: SpotifyItem[] }) {
+export default function ItemTiles({
+  items,
+  sourceType,
+  gameType
+}: {
+  items: SpotifyItem[];
+  sourceType: SourceType;
+  gameType: GameType;
+}) {
   return (
     <div className="mb-20 mt-4 flex w-full flex-wrap content-center justify-center gap-4 md:mb-0 md:grid md:grid-cols-[repeat(auto-fit,_minmax(13rem,_2fr))]">
       {items.length > 0 &&
@@ -10,10 +19,10 @@ export default function ItemTiles({ items }: { items: SpotifyItem[] }) {
             className="h-68 relative flex w-48 animate-fade-drop-in flex-col items-center overflow-hidden opacity-0 transition-opacity duration-200"
             style={{ animationDelay: `${index * 0.05}s` }}
           >
-            <a href={`/game/artist/${item.id}`}>
+            <a href={getGamePlayPath(sourceType, gameType, item.id)}>
               <img
                 src={item.imageURL}
-                alt="artist"
+                alt={sourceType}
                 className="block h-48 w-48 cursor-pointer bg-pink-300 object-cover transition-opacity duration-200 hover:opacity-50"
               />
             </a>

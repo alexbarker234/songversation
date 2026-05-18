@@ -1,17 +1,19 @@
 import { TrackMap } from "@/types";
 import { cn } from "@/utils/cn";
-import { trackHasLyrics } from "@/utils/trackUtils";
+import { trackHasLyrics, trackHasPreview } from "@/utils/trackUtils";
 import { useState } from "react";
 import { FaCaretLeft, FaCaretRight } from "react-icons/fa";
 
 function DebugTrackList({
   trackOrder,
   trackMap,
-  currentTrackIndex
+  currentTrackIndex,
+  mode = "lyrics"
 }: {
   trackOrder: string[];
   trackMap: TrackMap;
   currentTrackIndex: number;
+  mode?: "lyrics" | "audio";
 }) {
   const [isMinimized, setIsMinimized] = useState(true);
 
@@ -40,10 +42,19 @@ function DebugTrackList({
             <div
               key={track.id}
               className={cn("flex flex-col rounded-md border-2 p-2", {
-                "border-green-500": track.hasFetchedLyrics && trackHasLyrics(track),
-                "border-red-500": track.hasFetchedLyrics && !trackHasLyrics(track), // No lyrics found
-                "border-yellow-500": !track.hasFetchedLyrics, // Not fetched
-                "border-blue-500": trackHasLyrics(track) && !track.hasFetchedLyrics, // Cached
+                "border-green-500":
+                  mode === "audio"
+                    ? track.hasFetchedPreview && trackHasPreview(track)
+                    : track.hasFetchedLyrics && trackHasLyrics(track),
+                "border-red-500":
+                  mode === "audio"
+                    ? track.hasFetchedPreview && !trackHasPreview(track)
+                    : track.hasFetchedLyrics && !trackHasLyrics(track),
+                "border-yellow-500": mode === "audio" ? !track.hasFetchedPreview : !track.hasFetchedLyrics,
+                "border-blue-500":
+                  mode === "audio"
+                    ? trackHasPreview(track) && !track.hasFetchedPreview
+                    : trackHasLyrics(track) && !track.hasFetchedLyrics,
                 "bg-primary font-bold": index === currentTrackIndex
               })}
             >

@@ -6,6 +6,8 @@ export interface Track {
   imageURL: string;
   lyrics?: string[];
   hasFetchedLyrics?: boolean;
+  previewUrl?: string;
+  hasFetchedPreview?: boolean;
 }
 export type TrackMap = Record<string, Track>;
 // ALBUM
@@ -51,6 +53,12 @@ export interface GameItem {
 export interface LyricMap {
   [key: string]: string[];
 }
+
+export interface PreviewMap {
+  [key: string]: string;
+}
+
+export type GameMode = "lyric" | "audio";
 // USER
 export interface UserData {
   name: string;

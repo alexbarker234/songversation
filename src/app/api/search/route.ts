@@ -9,7 +9,7 @@ export async function GET(req: Request) {
     if (!searchTerm) return NextResponse.json({ error: "No search term provided" }, { status: 400 });
 
     const type = searchParams.get("type");
-    if (!type || (type != "artist" && type != "playlist"))
+    if (!type || (type != "artist" && type != "playlist" && type != "track"))
       return NextResponse.json({ error: "Invalid type" }, { status: 400 });
 
     const searchResults = await searchSpotify(searchTerm, type);

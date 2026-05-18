@@ -1,157 +1,145 @@
 import { saveScore } from "@/lib/localScoreManager";
 import { TrackMap } from "@/types";
+import { GameType } from "@/utils/gameTypes";
 import { shuffleArray } from "@/utils/arrayUtils";
 import { randBetween } from "@/utils/mathUtils";
-import { trackHasLyrics } from "@/utils/trackUtils";
+import { trackHasLyrics, trackHasPreview } from "@/utils/trackUtils";
 import { useEffect, useState } from "react";
-
-/**
- * Hook to manage game state and logic for the lyric guessing game.
- * Handles track loading, scoring, game progression, and offline functionality.
- *
- * @param trackMap - Map of track IDs to track objects containing lyrics and metadata
- * @param type - Type of game being played ('playlist' or 'artist')
- * @param id - ID of the playlist or artist
- * @param isDataReady - Whether initial game data has been loaded
- * @param isOfflineReady - Whether all required data is cached for offline play
- * @param fetchLyrics - Function to fetch lyrics for given track IDs
- * @returns Object containing:
- *  - isPlayable: Whether the game is in a playable state
- *  - isLoaded: Whether game data has finished loading
- *  - lyricStartLine: Current starting line number for displayed lyrics
- *  - score: Current game score
- *  - isGameFinished: Whether the game has ended
- *  - trackOrder: Array of track IDs in play order
- *  - currentTrackIndex: Index of current track being played
- *  - errorMessage: Error message if game cannot be played
- *  - isLyricsLoading: Whether lyrics are currently being fetched
- */
 
 export function useGame(
   trackMap: TrackMap,
   type: "playlist" | "artist",
   id: string,
+  gameType: GameType,
   isDataReady: boolean,
   isOfflineReady: boolean,
-  fetchLyrics: (trackIds: string[]) => Promise<void>
+  fetchContent: (trackIds: string[]) => Promise<void>
 ) {
-  // Loading state
+  const isLyric = gameType === "lyric";
+
   const [isPlayable, setIsPlayable] = useState(true);
   const [isLoaded, setIsLoaded] = useState(false);
-
-  // Data state
-  const [lyricStartLine, setLyricStartLine] = useState<number>(0);
-  const [score, setScore] = useState<number>(0);
+  const [lyricStartLine, setLyricStartLine] = useState(0);
+  const [score, setScore] = useState(0);
   const [isGameFinished, setGameFinished] = useState(false);
   const [trackOrder, setTrackOrder] = useState<string[]>([]);
-  const [currentTrackIndex, setCurrentTrackIndex] = useState<number>(0);
-
-  // Error state
-  const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined);
-
-  // Add new state to track lyrics loading
-  const [isLyricsLoading, setIsLyricsLoading] = useState(false);
+  const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
+  const [errorMessage, setErrorMessage] = useState<string | undefined>();
+  const [isContentLoading, setIsContentLoading] = useState(false);
+  const [clipKey, setClipKey] = useState(0);
 
   useEffect(() => {
     setIsPlayable(true);
   }, [trackMap]);
 
-  // Wait until data is ready to load
   useEffect(() => {
     if (!isDataReady || trackOrder.length != 0) return;
-    console.log("Starting game");
     loadGame();
   }, [isDataReady]);
 
   const loadGame = () => {
-    let shuffledTrackIds: string[] = [];
+    if (!isLyric && !navigator.onLine) {
+      setErrorMessage("Internet connection required to play the audio quiz.");
+      setIsPlayable(false);
+      setIsLoaded(true);
+      return;
+    }
 
-    // Tracks with lyrics or tracks that haven't had lyrics fetched
     let availableTrackIds = Object.values(trackMap)
-      .filter((track) => track.lyrics || !track.hasFetchedLyrics)
+      .filter((track) =>
+        isLyric
+          ? track.lyrics || !track.hasFetchedLyrics
+          : track.previewUrl || !track.hasFetchedPreview
+      )
       .map((track) => track.id);
-    const isOffline = !navigator.onLine;
 
-    if (isOffline) {
-      console.log(`Offline mode. Is game offline ready: ${isOfflineReady}`);
-
+    if (isLyric && !navigator.onLine) {
       if (!isOfflineReady) {
         setErrorMessage(`Internet connection required. Please download this ${type} while online to play offline.`);
         setIsPlayable(false);
         setIsLoaded(true);
         return;
       }
-
-      availableTrackIds = availableTrackIds.filter((id) => trackMap[id] && trackHasLyrics(trackMap[id]));
+      availableTrackIds = availableTrackIds.filter((trackId) => trackMap[trackId] && trackHasLyrics(trackMap[trackId]));
     }
 
-    shuffledTrackIds = [...availableTrackIds];
+    const shuffledTrackIds = [...availableTrackIds];
     shuffleArray(shuffledTrackIds);
 
-    // Fetch the first 10 that don't already have lyrics
-    const tracksWithoutLyrics = shuffledTrackIds.filter((id) => !trackMap[id]?.hasFetchedLyrics).slice(0, 10);
-    const needsToFetch = tracksWithoutLyrics.length != 0;
-    const areLyricsCached = tracksWithoutLyrics.every((id) => trackMap[id] && trackHasLyrics(trackMap[id]));
+    const tracksNeedingFetch = shuffledTrackIds
+      .filter((trackId) =>
+        isLyric ? !trackMap[trackId]?.hasFetchedLyrics : !trackMap[trackId]?.hasFetchedPreview
+      )
+      .slice(0, 10);
 
-    const canStart = !needsToFetch || areLyricsCached;
+    const needsToFetch = tracksNeedingFetch.length != 0;
+    const areCached = tracksNeedingFetch.every((trackId) =>
+      isLyric ? trackMap[trackId] && trackHasLyrics(trackMap[trackId]) : trackMap[trackId] && trackHasPreview(trackMap[trackId])
+    );
 
     if (needsToFetch) {
-      setIsLyricsLoading(true);
-      fetchLyrics(tracksWithoutLyrics);
-      console.log("Fetching lyrics");
+      setIsContentLoading(true);
+      void fetchContent(tracksNeedingFetch);
     }
 
     setTrackOrder(shuffledTrackIds);
     setGameFinished(false);
     setScore(0);
 
-    if (canStart) {
-      // Start with the first track that has lyrics
-      console.log("Starting game straight away");
-      startWithFirstTrackWithLyrics(shuffledTrackIds);
+    if (!needsToFetch || areCached) {
+      startWithFirstPlayableTrack(shuffledTrackIds);
     }
   };
 
   useEffect(() => {
-    if (isLyricsLoading && trackOrder.length > 0) {
-      console.log("Starting with newly fetched lyrics");
-      startWithFirstTrackWithLyrics(trackOrder);
-      setIsLyricsLoading(false);
+    if (isContentLoading && trackOrder.length > 0) {
+      startWithFirstPlayableTrack(trackOrder);
+      setIsContentLoading(false);
     }
   }, [trackMap]);
 
-  const startWithFirstTrackWithLyrics = (trackOrder: string[]) => {
-    const index = findIndexWithLyrics(trackOrder);
+  const startWithFirstPlayableTrack = (order: string[]) => {
+    const index = findNextPlayableIndex(order);
     setIsLoaded(true);
-    if (!trackOrder[index] || index === -1) {
-      setErrorMessage("No tracks with lyrics found");
-      console.log({ trackOrder, index });
+
+    if (!order[index] || index === -1) {
+      setErrorMessage(isLyric ? "No tracks with lyrics found" : "No tracks with audio previews found");
       setIsPlayable(false);
       return;
     }
 
     setCurrentTrackIndex(index);
-    setLyricStartLine(chooseLyricLine(trackOrder[index]));
+    if (isLyric) {
+      setLyricStartLine(chooseLyricLine(order[index]));
+    } else {
+      setClipKey((k) => k + 1);
+    }
   };
 
   const chooseLyricLine = (trackID: string) => {
     const track = trackMap[trackID];
-    if (!track || !track.lyrics) return 0;
+    if (!track?.lyrics) return 0;
     return randBetween(0, track.lyrics.length - 3);
   };
 
-  // Add a helper function to get current lyrics
   const getCurrentLyrics = (): string[] => {
-    if (!trackOrder[currentTrackIndex]) return ["", "", ""];
+    const trackId = trackOrder[currentTrackIndex];
+    if (!trackId) return ["", "", ""];
 
-    const currentTrack = trackMap[trackOrder[currentTrackIndex]];
+    const currentTrack = trackMap[trackId];
     if (!currentTrack?.lyrics) return ["", "", ""];
     return currentTrack.lyrics.slice(lyricStartLine, lyricStartLine + 3);
   };
 
+  const getCurrentPreviewUrl = (): string | undefined => {
+    const trackId = trackOrder[currentTrackIndex];
+    if (!trackId) return undefined;
+    return trackMap[trackId]?.previewUrl;
+  };
+
   const submit = (trackId: string) => {
     if (trackOrder[currentTrackIndex] === trackId) {
-      setScore(score + 1);
+      setScore((s) => s + 1);
       chooseNewSong();
     } else {
       finishGame();
@@ -160,53 +148,65 @@ export function useGame(
 
   const chooseNewSong = () => {
     if (currentTrackIndex === trackOrder.length - 1) {
-      // TODO, refresh order and start over
-      console.log("Game finished");
       setGameFinished(true);
       return;
     }
 
-    const newIndex = findIndexWithLyrics(trackOrder, currentTrackIndex + 1);
+    const newIndex = findNextPlayableIndex(trackOrder, currentTrackIndex + 1);
     if (newIndex === -1 || !trackOrder[newIndex]) return;
 
     setCurrentTrackIndex(newIndex);
-    setLyricStartLine(chooseLyricLine(trackOrder[newIndex]));
+    if (isLyric) {
+      setLyricStartLine(chooseLyricLine(trackOrder[newIndex]));
+    } else {
+      setClipKey((k) => k + 1);
+    }
 
-    // Fetch the next 5 lyrics if there are only 2 more ahead with lyrics
     const fetchCount = 8;
-    const remainingTracksWithLyrics = trackOrder
-      .slice(currentTrackIndex + 1, currentTrackIndex + 1 + fetchCount)
-      .filter((id) => trackMap[id] && trackHasLyrics(trackMap[id]) && !trackMap[id].hasFetchedLyrics);
+    const slice = trackOrder.slice(currentTrackIndex + 1, currentTrackIndex + 1 + fetchCount);
 
-    // TODO figure out offline situation here
-    if (remainingTracksWithLyrics.length < 3 && navigator.onLine) {
-      const nextTracksToFetch = trackOrder
-        .slice(currentTrackIndex + 1, currentTrackIndex + 1 + fetchCount)
-        .filter((id) => trackMap[id] && !trackMap[id].hasFetchedLyrics);
-      fetchLyrics(nextTracksToFetch);
+    const needsMoreCached = slice.filter((trackId) => {
+      const track = trackMap[trackId];
+      if (!track) return false;
+      return isLyric
+        ? trackHasLyrics(track) && !track.hasFetchedLyrics
+        : trackHasPreview(track) && !track.hasFetchedPreview;
+    }).length;
+
+    if (needsMoreCached < 3 && navigator.onLine) {
+      const nextToFetch = slice.filter((trackId) => {
+        const track = trackMap[trackId];
+        if (!track) return false;
+        return isLyric ? !track.hasFetchedLyrics : !track.hasFetchedPreview;
+      });
+      void fetchContent(nextToFetch);
     }
   };
 
-  const findIndexWithLyrics = (tracks: string[], startIndex = 0) => {
-    let newIndex = startIndex;
-    while (newIndex < tracks.length) {
-      const trackId = tracks[newIndex];
-      if (!trackId || (trackMap[trackId] && trackHasLyrics(trackMap[trackId]))) {
-        return newIndex;
+  const findNextPlayableIndex = (tracks: string[], startIndex = 0) => {
+    let index = startIndex;
+    while (index < tracks.length) {
+      const trackId = tracks[index];
+      const track = trackId ? trackMap[trackId] : undefined;
+      const hasContent = track && (isLyric ? trackHasLyrics(track) : trackHasPreview(track));
+      if (!trackId || hasContent) {
+        return index;
       }
-      newIndex++;
+      index++;
     }
     return -1;
   };
 
   const finishGame = () => {
     setGameFinished(true);
-    saveScore(type, id, score);
+    saveScore(type, id, score, gameType);
   };
 
   return {
     currentTrackID: trackOrder[currentTrackIndex],
-    lyricDisplay: getCurrentLyrics(),
+    lyricDisplay: isLyric ? getCurrentLyrics() : undefined,
+    previewUrl: isLyric ? undefined : getCurrentPreviewUrl(),
+    clipKey,
     score,
     isGameFinished,
     isLoaded,

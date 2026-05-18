@@ -40,8 +40,8 @@ const BottomNav = ({ isStandalone }: { isStandalone: boolean }) => {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-10 flex justify-between bg-zinc-950 pb-8 text-sm md:hidden">
       <BottomNavItem href="/" icon={<FaHome size={24} />} text="Home" />
-      <BottomNavItem href="/game/artist" icon={<BsPersonFill size={24} />} text="Artist Quiz" />
-      <BottomNavItem href="/game/playlist" icon={<BsStack size={24} />} text="Playlist Quiz" />
+      <BottomNavItem href="/game/artist/lyric" icon={<BsPersonFill size={24} />} text="Artist Quiz" />
+      <BottomNavItem href="/game/playlist/lyric" icon={<BsStack size={24} />} text="Playlist Quiz" />
       <BottomNavItem href="/settings" icon={<FaCog size={24} />} text="Settings" />
     </div>
   );

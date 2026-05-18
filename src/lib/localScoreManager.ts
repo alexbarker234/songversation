@@ -1,32 +1,89 @@
-interface HighScoreRecord {
+export const HIGH_SCORE_VERSION = 1;
+
+type ScoreMap = { [key: string]: number };
+
+interface SourceScores {
+  artist: ScoreMap;
+  playlist: ScoreMap;
+}
+
+export interface HighScoreRecord {
+  version: number;
   records: {
-    artist: { [key: string]: number };
-    playlist: { [key: string]: number };
+    lyrics: SourceScores;
+    audio: SourceScores;
   };
+}
+
+function createDefaultHighScores(): HighScoreRecord {
+  return {
+    version: HIGH_SCORE_VERSION,
+    records: {
+      lyrics: { artist: {}, playlist: {} },
+      audio: { artist: {}, playlist: {} }
+    }
+  };
+}
+
+function isValidHighScoreRecord(parsed: unknown): parsed is HighScoreRecord {
+  if (!parsed || typeof parsed !== "object") return false;
+  const data = parsed as HighScoreRecord;
+  return (
+    data.version === HIGH_SCORE_VERSION &&
+    !!data.records?.lyrics?.artist &&
+    !!data.records?.lyrics?.playlist &&
+    !!data.records?.audio?.artist &&
+    !!data.records?.audio?.playlist
+  );
 }
 
 function getHighScores(): HighScoreRecord {
   const storedScores = localStorage.getItem("highScores");
-  return storedScores ? JSON.parse(storedScores) : { records: { artist: {}, playlist: {} } };
+  if (!storedScores) return createDefaultHighScores();
+
+  try {
+    const parsed: unknown = JSON.parse(storedScores);
+    if (isValidHighScoreRecord(parsed)) return parsed;
+  } catch {
+    // fall through to defaults
+  }
+
+  return createDefaultHighScores();
 }
 
 function saveHighScores(highScores: HighScoreRecord): void {
+  highScores.version = HIGH_SCORE_VERSION;
   localStorage.setItem("highScores", JSON.stringify(highScores));
 }
 
-export function saveScore(type: "artist" | "playlist", id: string, score: number): void {
-  const highScores = getHighScores();
+function getRecordsForMode(highScores: HighScoreRecord, mode: "lyric" | "audio", type: "artist" | "playlist") {
+  const modeRecords = mode === "audio" ? highScores.records.audio : highScores.records.lyrics;
+  return modeRecords[type];
+}
 
-  // If the score is higher than the existing score, or if there is no score, update it
-  if (!highScores.records[type][id] || score > highScores.records[type][id]) {
-    highScores.records[type][id] = score;
+export function saveScore(
+  type: "artist" | "playlist",
+  id: string,
+  score: number,
+  mode: "lyric" | "audio" = "lyric"
+): void {
+  const highScores = getHighScores();
+  const records = getRecordsForMode(highScores, mode, type);
+
+  if (!records[id] || score > records[id]) {
+    records[id] = score;
     saveHighScores(highScores);
   }
 }
 
-export function getScore(type: "artist" | "playlist", id: string): number | null {
+export function getScore(
+  type: "artist" | "playlist",
+  id: string,
+  mode: "lyric" | "audio" = "lyric"
+): number | null {
   const highScores = getHighScores();
-  return highScores.records[type][id] || null;
+  const records = getRecordsForMode(highScores, mode, type);
+  return records[id] || null;
 }
 
 export function getAllScores(): HighScoreRecord {
