@@ -1,56 +1,45 @@
+import { getGeniusLyrics } from "@/lib/geniusLyrics";
 import { TrackInfo } from "@/types";
 
-export async function getLyrics(artist: string, title: string) {
+async function fetchFromOvh(artist: string, title: string): Promise<string | undefined> {
   const url = `https://api.lyrics.ovh/v1/${encodeURIComponent(artist)}/${encodeURIComponent(title)}`;
+  const response = await fetch(url, { cache: "force-cache" });
+  if (response.status === 404) return undefined;
+  if (!response.ok) {
+    throw new Error(`Failed to fetch lyrics: ${response.status} ${response.statusText}`);
+  }
+  const data = await response.json();
+  return data.lyrics;
+}
+
+export async function getLyrics(artist: string, title: string) {
+  try {
+    const ovhLyrics = await fetchFromOvh(artist, title);
+    if (ovhLyrics) return formatLyrics(ovhLyrics);
+  } catch (error: unknown) {
+    console.error(`Error fetching lyrics from OVH for ${artist} - ${title}:`, error);
+  }
 
   try {
-    const response = await fetch(url, { cache: "force-cache" });
-    if (response.status === 404) {
-      return undefined;
-    }
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch lyrics: ${response.status} ${response.statusText}`);
-    }
-    const data = await response.json();
-
-    return formatLyrics(data.lyrics);
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      throw new Error(`An error occurred while fetching lyrics: ${error.message}`);
-    } else {
-      throw new Error("An unknown error occurred");
-    }
+    const geniusLyrics = await getGeniusLyrics(title, artist);
+    return formatLyrics(geniusLyrics);
+  } catch (error) {
+    console.error(`Genius fallback failed for ${artist} - ${title}:`, error);
+    return undefined;
   }
 }
 
 export const getMultipleLyrics = async (tracks: TrackInfo[]) => {
   const lyricMap: { [key: string]: string[] } = {};
-
   const start = Date.now();
 
-  const requests = tracks.map(({ artist, title }) => {
-    const url = `https://api.lyrics.ovh/v1/${encodeURIComponent(artist)}/${encodeURIComponent(title)}`;
-    return fetch(url, { cache: "force-cache" })
-      .then((res) => {
-        if (res.status === 404) return undefined;
-        if (!res.ok) throw new Error(`Failed to fetch lyrics: ${res.status} ${res.statusText}`);
-        return res.json();
-      })
-      .catch((error) => {
-        console.error(`Error fetching lyrics for ${artist} - ${title}: ${error.message}`);
-        return undefined;
-      });
-  });
+  const results = await Promise.all(tracks.map(({ artist, title }) => getLyrics(artist, title)));
 
-  const responses = await Promise.all(requests);
   console.log(`Fetched ${tracks.length} lyrics in ${Date.now() - start} ms`);
 
-  responses.forEach((response, index) => {
-    if (!tracks[index]) return;
-
-    const { artist, title, id } = tracks[index];
-    if (response) lyricMap[id] = formatLyrics(response.lyrics);
+  results.forEach((lyrics, index) => {
+    if (!tracks[index] || !lyrics) return;
+    lyricMap[tracks[index].id] = lyrics;
   });
 
   return lyricMap;
