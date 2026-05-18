@@ -1,6 +1,8 @@
 "use client";
 
 import Button from "@/components/Button";
+import { faMusic, faVolumeHigh } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useRef, useState } from "react";
 
 const CLIP_DURATION_MS = 3000;
@@ -66,7 +68,7 @@ export default function AudioClipPlayer({ previewUrl, clipKey }: AudioClipPlayer
           isPlaying ? "scale-110 animate-pulse" : ""
         }`}
       >
-        <span className="text-5xl">{isPlaying ? "🔊" : "🎵"}</span>
+        <FontAwesomeIcon icon={isPlaying ? faVolumeHigh : faMusic} className="w-20" />
       </div>
 
       <p className="text-sm text-gray-400">Listen to the 3-second clip</p>

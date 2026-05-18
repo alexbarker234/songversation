@@ -1,5 +1,6 @@
 "use client";
 
+import "@/lib/fontawesome";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { gsap } from "gsap";
 import { TransitionRouter } from "next-transition-router";
